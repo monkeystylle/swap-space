@@ -20,3 +20,9 @@ model User {
   email        String    @unique
   passwordHash String
 }
+
+model Comment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  content   String   @db.VarChar(1024)
+}
