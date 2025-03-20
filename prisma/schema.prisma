@@ -26,3 +26,38 @@ model Comment {
   createdAt DateTime @default(now())
   content   String   @db.VarChar(1024)
 }
+
+
+model SurveyResponse {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Text input
+  fullName        String
+  email           String
+  
+  // Textarea
+  feedback        String?  @db.VarChar(2000)
+  
+  // Select
+  department      String
+  
+  // Radio group
+  experienceLevel String
+  
+  // Checkbox
+  isSubscribed    Boolean  @default(false)
+  
+  // Multiple checkboxes stored as JSON
+  interests       String   @db.Text // Stored as JSON string
+  
+  // Date
+  availableDate   DateTime
+  
+  // Switch
+  agreeToTerms    Boolean  @default(false)
+  
+  // Rating (can be represented as an integer)
+  satisfaction    Int      @default(0) // 0-5 rating
+}
