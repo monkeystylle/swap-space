@@ -19,13 +19,26 @@ model User {
   username     String    @unique
   email        String    @unique
   passwordHash String
+  sessions     Session[]
 }
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  userId    String
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 
 model Comment {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   content   String   @db.VarChar(1024)
 }
+
+
 
 
 model SurveyResponse {

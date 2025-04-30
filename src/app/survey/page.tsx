@@ -1,4 +1,4 @@
-import SurveyForm from '@/features/survey/components/survery-form';
+import SurveyForm from '@/features/survey/components/survey-form';
 
 export default function SurveyPage() {
   return (

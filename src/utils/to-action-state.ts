@@ -96,6 +96,7 @@ export const fromErrorToActionState = (
   formData?: FormData
 ): ActionState => {
   if (error instanceof ZodError) {
+    //Zod validation errors
     return {
       status: 'ERROR',
       message: '',
@@ -104,6 +105,7 @@ export const fromErrorToActionState = (
       timestamp: Date.now(),
     };
   } else if (error instanceof Error) {
+    // Regular JavaScript errors (like network errors)
     return {
       status: 'ERROR',
       message: error.message,
@@ -112,6 +114,7 @@ export const fromErrorToActionState = (
       timestamp: Date.now(),
     };
   } else {
+    // Unknown errors
     return {
       status: 'ERROR',
       message: 'An unknown error occurred',
