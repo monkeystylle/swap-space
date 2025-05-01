@@ -1,7 +1,7 @@
 'use server';
 
 import { Prisma } from '@prisma/client';
-// import { redirect } from 'next/navigation';
+
 import { z } from 'zod';
 import {
   ActionState,
@@ -15,13 +15,15 @@ import { prisma } from '@/lib/prisma';
 import { generateRandomToken } from '@/utils/crypto';
 import { setSessionCookie } from '../utils/session-cookie';
 
-export const signUpSchema = z
+const signUpSchema = z
   .object({
     username: z
       .string()
       .min(1, 'Username is required')
       .max(191, 'Username must be less than 191 characters')
-      .refine(value => !value.includes(' '), 'Username cannot contain spaces'),
+      .refine(async value => !value.includes(' '), {
+        message: 'Username cannot contain spaces',
+      }),
     email: z
       .string()
       .min(1, 'Email is required')
@@ -36,7 +38,7 @@ export const signUpSchema = z
       .min(6, 'Password must be at least 6 characters')
       .max(191, 'Password must be less than 191 characters'),
   })
-  .superRefine(({ password, confirmPassword }, ctx) => {
+  .superRefine(async ({ password, confirmPassword }, ctx) => {
     if (password !== confirmPassword) {
       ctx.addIssue({
         code: 'custom',
@@ -46,13 +48,13 @@ export const signUpSchema = z
     }
   });
 
-export type SignUpFormValues = z.infer<typeof signUpSchema>;
+type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 export const signUp = async (
   values: SignUpFormValues
 ): Promise<ActionState> => {
   try {
-    const validatedFields = signUpSchema.safeParse(values);
+    const validatedFields = await signUpSchema.safeParseAsync(values);
 
     if (!validatedFields.success) {
       // Handle Zod validation errors
