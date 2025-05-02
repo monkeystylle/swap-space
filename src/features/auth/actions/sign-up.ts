@@ -21,7 +21,7 @@ const signUpSchema = z
       .string()
       .min(1, 'Username is required')
       .max(191, 'Username must be less than 191 characters')
-      .refine(async value => !value.includes(' '), {
+      .refine(value => !value.includes(' '), {
         message: 'Username cannot contain spaces',
       }),
     email: z
@@ -38,7 +38,7 @@ const signUpSchema = z
       .min(6, 'Password must be at least 6 characters')
       .max(191, 'Password must be less than 191 characters'),
   })
-  .superRefine(async ({ password, confirmPassword }, ctx) => {
+  .superRefine(({ password, confirmPassword }, ctx) => {
     if (password !== confirmPassword) {
       ctx.addIssue({
         code: 'custom',
@@ -54,7 +54,7 @@ export const signUp = async (
   values: SignUpFormValues
 ): Promise<ActionState> => {
   try {
-    const validatedFields = await signUpSchema.safeParseAsync(values);
+    const validatedFields = signUpSchema.safeParse(values);
 
     if (!validatedFields.success) {
       // Handle Zod validation errors
