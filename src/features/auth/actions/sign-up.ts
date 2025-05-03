@@ -54,14 +54,8 @@ export const signUp = async (
   values: SignUpFormValues
 ): Promise<ActionState> => {
   try {
-    const validatedFields = signUpSchema.safeParse(values);
-
-    if (!validatedFields.success) {
-      // Handle Zod validation errors
-      return fromErrorToActionState(validatedFields.error);
-    }
-
-    const { username, email, password } = validatedFields.data;
+    // Use parse directly - any validation errors will be caught in the catch block
+    const { username, email, password } = signUpSchema.parse(values);
     const passwordHash = await hashPassword(password);
 
     const user = await prisma.user.create({
@@ -84,7 +78,8 @@ export const signUp = async (
       user
     );
   } catch (error) {
-    // if code tries to create a user in the database and fails , do this
+    // if code tries to create a user in the database and fails ,
+    // This will catch both ZodErrors and Prisma errors
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2002'
