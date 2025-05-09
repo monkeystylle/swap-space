@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @plugin "tailwindcss-animate";
 
@@ -123,4 +123,14 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@theme {
+  --color-batutan: #ffff00;
+}
+
+@utility container {
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 1200px;
 }
