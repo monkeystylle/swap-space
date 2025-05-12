@@ -37,7 +37,7 @@ const Navbar = () => {
   return (
     <nav
       className="
-        
+        animate-header-from-top
         supports-backdrop-blur:bg-background/60
         fixed left-0 right-0 top-0 z-20
         border-b bg-background/95 backdrop-blur

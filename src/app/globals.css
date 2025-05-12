@@ -125,12 +125,49 @@
   }
 }
 
-@theme {
-  --color-batutan: #ffff00;
-}
-
 @utility container {
   padding: 20px;
   margin: 0 auto;
   max-width: 1200px;
+}
+
+//Keyframes
+
+@keyframes fade-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes header-from-top {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sidebar-from-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Consolidated theme block */
+/* Animation theme variables - these will automatically generate utility classes */
+@theme {
+  --color-batutan: #ffff00;
+
+  --animate-fade-from-top: fade-from-top 0.5s ease-out;
+  --animate-header-from-top: header-from-top 0.4s ease-out;
+  --animate-sidebar-from-left: sidebar-from-left 0.5s ease-out;
 }
