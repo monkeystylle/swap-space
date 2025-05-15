@@ -35,15 +35,13 @@ export default function RootLayout({
           <div className="flex h-screen overflow-hidden border-collapse">
             <main
               className="
-    min-h-screen flex-1
-    overflow-y-auto overflow-x-hidden
-    py-12 px-4      /* Default padding for mobile */
-    sm:py-16 sm:px-6 /* Small devices (640px and up) */
-    md:py-20 md:px-8 /* Medium devices (768px and up) */
-    lg:py-24 lg:px-8 /* Large devices (1024px and up) */
-    bg-secondary/20
-    flex flex-col
-  "
+                min-h-screen flex-1
+                overflow-y-auto overflow-x-hidden
+                py-24 px-8
+                bg-secondary/20
+                flex flex-col
+               
+              "
             >
               {children}
             </main>
