@@ -9,6 +9,36 @@ export const createUserFromGoogle = async (
   name: string
 ): Promise<ActionState> => {
   try {
+    // First check if a user with this email already exists
+    const existingUserByEmail = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUserByEmail) {
+      // If user exists but doesn't have a googleId, update the user to add the googleId
+      if (!existingUserByEmail.googleId) {
+        const updatedUser = await prisma.user.update({
+          where: { id: existingUserByEmail.id },
+          data: { googleId },
+        });
+
+        return toActionState(
+          'SUCCESS',
+          'Google account linked to existing account',
+          undefined,
+          updatedUser
+        );
+      } else {
+        // User exists with both email and googleId (shouldn't happen normally)
+        return toActionState(
+          'SUCCESS',
+          'Signed in with Google',
+          undefined,
+          existingUserByEmail
+        );
+      }
+    }
+
     // Generate a username from the name (remove spaces, lowercase)
     const baseUsername = name.replace(/\s+/g, '').toLowerCase();
 
