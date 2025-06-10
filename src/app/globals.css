@@ -126,9 +126,29 @@
 }
 
 @utility container {
-  padding: 20px;
   margin: 0 auto;
-  max-width: 1200px;
+  padding: 0 0.75rem; /* 12px on mobile */
+
+  @media (min-width: 640px) {
+    max-width: 640px;
+    padding: 0 1rem; /* 16px on sm+ */
+  }
+  @media (min-width: 768px) {
+    max-width: 768px;
+    padding: 0 1.5rem; /* 24px on md+ */
+  }
+  @media (min-width: 1024px) {
+    max-width: 1024px;
+    padding: 0 2rem; /* 32px on lg+ */
+  }
+  @media (min-width: 1280px) {
+    max-width: 1280px;
+    padding: 0 2.5rem; /* 40px on xl+ */
+  }
+  @media (min-width: 1536px) {
+    max-width: 1536px;
+    padding: 0 3rem; /* 48px on 2xl+ */
+  }
 }
 
 //Keyframes

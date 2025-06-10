@@ -42,7 +42,7 @@ const Navbar = () => {
         fixed left-0 right-0 top-0 z-20
         border-b bg-background/95 backdrop-blur
         w-full flex py-2.5 px-5 justify-between
-       
+        
       "
     >
       <div className="flex  gap-x-2">
@@ -51,7 +51,7 @@ const Navbar = () => {
           className={buttonVariants({ variant: 'ghost' })}
         >
           <LucideKanban />
-          <h1 className="text-lg font-semibold">Beta</h1>
+          <h1 className="text-lg font-semibold">Swap Space</h1>
         </Link>
       </div>
       <div className="flex  gap-x-2">
