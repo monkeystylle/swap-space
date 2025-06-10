@@ -1,8 +1,21 @@
 import { generateState, generateCodeVerifier } from 'arctic';
 import { google } from '@/lib/oauth';
 import { cookies } from 'next/headers';
+import { getBaseUrl } from '@/utils/url';
 
 export async function GET(): Promise<Response> {
+  // Debug: Let's see what URLs are being generated
+  const baseUrl = getBaseUrl();
+  const expectedRedirectUri = `${baseUrl}/api/login/google/callback`;
+
+  console.log('=== OAuth Debug Info ===');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('Base URL:', baseUrl);
+  console.log('Expected Redirect URI:', expectedRedirectUri);
+  console.log('VERCEL_URL:', process.env.VERCEL_URL);
+  console.log('NEXT_PUBLIC_VERCEL_URL:', process.env.NEXT_PUBLIC_VERCEL_URL);
+  console.log('========================');
+
   //generate security tokens
   const state = generateState();
   const codeVerifier = generateCodeVerifier();
