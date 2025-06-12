@@ -1,7 +1,6 @@
 import { generateState, generateCodeVerifier } from 'arctic';
 import { google } from '@/lib/oauth';
 import { cookies } from 'next/headers';
-import { getBaseUrl } from '@/utils/url';
 
 export async function GET(): Promise<Response> {
   //generate security tokens
