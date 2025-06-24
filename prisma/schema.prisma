@@ -14,13 +14,20 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum PostedItemStatus {
+  OPEN
+  DONE
+}
+
 model User {
-  id           String    @id @default(cuid())
-  username     String    @unique
-  email        String    @unique
+  id           String       @id @default(cuid())
+  username     String       @unique
+  email        String       @unique
   passwordHash String   
-  googleId     String?   @unique // Add this for Google OAuth
+  googleId     String?      @unique // Add this for Google OAuth
   sessions     Session[]
+  postedItems  PostedItem[] // Add this relationship
+  offers       Offer[]      // Add this relationship
 }
 
 model Session {
@@ -30,5 +37,43 @@ model Session {
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model PostedItem {
+  id          String           @id @default(cuid())
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  title       String
+  details     String           @db.VarChar(1024)
+  status      PostedItemStatus @default(OPEN)
+  
+  // Cloudinary image info
+  imagePublicId String?        // Cloudinary public_id for the image
+  imageSecureUrl String?       // Cloudinary secure_url for the image
+  
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  offers      Offer[]
+
+  @@index([userId])
+}
+
+model Offer {
+  id           String     @id @default(cuid())
+  createdAt    DateTime   @default(now())
+  content      String     @db.VarChar(1024)
+  
+  // Cloudinary image info for offer images
+  imagePublicId String?   // Cloudinary public_id for the offer image
+  imageSecureUrl String?  // Cloudinary secure_url for the offer image
+  
+  postedItem   PostedItem @relation(fields: [postedItemId], references: [id], onDelete: Cascade)
+  postedItemId String
+  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId       String?
+
+  @@index([postedItemId])
+  @@index([userId])
+  @@unique([postedItemId, userId]) // Ensure user can only offer once per posted item
 }
 

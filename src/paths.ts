@@ -10,3 +10,9 @@ export const accountPasswordPath = () => '/account/password';
 export const ticketsPath = () => '/tickets';
 export const ticketPath = (ticketId: string) => `/tickets/${ticketId}`;
 export const ticketEditPath = (ticketId: string) => `/tickets/${ticketId}/edit`;
+
+// Posted Items paths
+export const wallPath = () => '/wall';
+export const postedItemPath = (postedItemId: string) => `/wall/${postedItemId}`;
+export const postedItemEditPath = (postedItemId: string) =>
+  `/wall/${postedItemId}/edit`;
