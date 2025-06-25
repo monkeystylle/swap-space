@@ -5,7 +5,6 @@
 
 'use server';
 
-import { z } from 'zod';
 import cloudinary from '@/lib/cloudinary';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
@@ -17,23 +16,12 @@ import {
 import { wallPath } from '@/paths';
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect';
 
-// Input validation schema
-const deletePostedItemSchema = z.object({
-  postedItemId: z.string().min(1, 'Posted item ID is required'),
-});
-
-// Type for function parameters
-type DeletePostedItemInput = z.infer<typeof deletePostedItemSchema>;
-
 export const deletePostedItem = async (
-  input: DeletePostedItemInput
+  postedItemId: string
 ): Promise<ActionState> => {
   try {
     // Authenticate user
     const { user } = await getAuthOrRedirect();
-
-    // Validate input
-    const { postedItemId } = deletePostedItemSchema.parse(input);
 
     // Find the posted item with ownership verification
     const postedItem = await prisma.postedItem.findFirst({
