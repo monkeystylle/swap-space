@@ -1,4 +1,4 @@
-import SampleCloudinary from '@/features/cloudinary/components/sample-cloudinary';
+import SampleCloudinary from '@/features/bartering/components/sample-cloudinary';
 
 const SampleCloudinaryPage = () => {
   return (

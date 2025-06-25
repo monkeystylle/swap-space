@@ -12,7 +12,6 @@ import {
   fromErrorToActionState,
 } from '@/utils/to-action-state';
 import { wallPath } from '@/paths';
-
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect';
 
 // Define validation schema for the input
