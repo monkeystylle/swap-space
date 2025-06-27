@@ -1,6 +1,6 @@
 /**
  * Server action for updating a posted item
- * Handles text updates and optional image replacement
+ * Handles selective updates for title, details, and/or image with Cloudinary management
  */
 
 'use server';
@@ -17,22 +17,23 @@ import {
 import { wallPath } from '@/paths';
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect';
 
-// Input validation schema
+// Define validation schema for optional form fields
 const updatePostedItemSchema = z.object({
-  postedItemId: z.string().min(1, 'Posted item ID is required'),
   title: z
     .string()
-    .min(1, 'Title is required')
-    .max(191, 'Title must be less than 191 characters'),
+    .min(1, 'Title cannot be empty')
+    .max(191, 'Title must be less than 191 characters')
+    .optional(),
   details: z
     .string()
-    .min(1, 'Details are required')
-    .max(1024, 'Details must be less than 1024 characters'),
+    .min(1, 'Details cannot be empty')
+    .max(1024, 'Details must be less than 1024 characters')
+    .optional(),
 });
 
-// Type for function parameters
+// Type for form input data
 type UpdatePostedItemInput = z.infer<typeof updatePostedItemSchema> & {
-  image?: File; // Optional new image
+  image?: File; // Optional new image file
 };
 
 // Cloudinary response type
@@ -42,17 +43,19 @@ interface CloudinaryResponse {
 }
 
 export const updatePostedItem = async (
+  postedItemId: string,
   input: UpdatePostedItemInput
 ): Promise<ActionState> => {
   try {
     // Authenticate user
     const { user } = await getAuthOrRedirect();
 
-    // Validate input
-    const { postedItemId, title, details } =
-      updatePostedItemSchema.parse(input);
+    // Ensure at least one field is being updated
+    if (!input.title && !input.details && !input.image) {
+      return toActionState('ERROR', 'At least one field must be updated');
+    }
 
-    // Find the posted item with ownership verification
+    // Find existing posted item and verify ownership
     const existingPostedItem = await prisma.postedItem.findFirst({
       where: {
         id: postedItemId,
@@ -68,25 +71,29 @@ export const updatePostedItem = async (
       );
     }
 
-    // Prepare update data with text fields
+    // Validate input data against schema
+    // This will throw an error if validation fails
+    const validatedInput = updatePostedItemSchema.parse(input);
+
+    // Prepare update data with fallback values to ensure required fields are never empty
     const updateData: {
-      title: string;
-      details: string;
+      title: string; // Always has a value
+      details: string; // Always has a value
       imagePublicId?: string;
       imageSecureUrl?: string;
     } = {
-      title,
-      details,
+      title: validatedInput.title ?? existingPostedItem.title,
+      details: validatedInput.details ?? existingPostedItem.details,
     };
 
     // Handle image replacement if new image is provided
     if (input.image) {
-      // Convert image file to buffer
+      // Convert image file to buffer for Cloudinary upload
       const file = input.image;
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      // Upload new image to Cloudinary first
+      // Upload new image to Cloudinary first (safer than deleting old image first)
       const cloudinaryResponse = await new Promise<CloudinaryResponse>(
         (resolve, reject) => {
           const uploadStream = cloudinary.uploader.upload_stream(
@@ -105,12 +112,12 @@ export const updatePostedItem = async (
         }
       );
 
-      // Only after successful upload, delete the old image
+      // Delete old image from Cloudinary after successful upload
       if (existingPostedItem.imagePublicId) {
         try {
           await cloudinary.uploader.destroy(existingPostedItem.imagePublicId);
         } catch (cloudinaryError) {
-          // Log warning but don't fail the update
+          // Log warning but don't fail the update - old image cleanup is not critical
           console.warn(
             'Failed to delete old image from Cloudinary:',
             cloudinaryError
@@ -124,24 +131,18 @@ export const updatePostedItem = async (
     }
 
     // Update the posted item in database
-    const updatedPostedItem = await prisma.postedItem.update({
+    await prisma.postedItem.update({
       where: {
         id: postedItemId,
       },
       data: updateData,
     });
-
-    // Revalidate the wall page
-    revalidatePath(wallPath());
-
-    return toActionState(
-      'SUCCESS',
-      'Posted item updated successfully',
-      undefined,
-      updatedPostedItem
-    );
   } catch (error) {
     console.error('Failed to update posted item:', error);
     return fromErrorToActionState(error);
   }
+
+  // Refresh the wall page to show updated content
+  revalidatePath(wallPath());
+  return toActionState('SUCCESS', 'Posted item updated successfully');
 };
