@@ -1,6 +1,6 @@
 /**
- * Posted Item Form Component
- * Handles creating new posted items with title, details, and image upload
+ * Update Posted Item Form Component
+ * Handles updating existing posted items with title, details, and image upload
  */
 
 'use client';
@@ -25,10 +25,10 @@ import {
 } from '@/components/ui/form';
 
 import { useImagePreview } from '../../hooks/use-image-preview';
-import { createPostedItem } from '../../actions/create-posted-item';
+import { updatePostedItem } from '../../actions/update-posted-item';
 
 // Form validation schema
-const postedItemFormSchema = z.object({
+const updatePostedItemFormSchema = z.object({
   title: z
     .string()
     .min(1, 'Title is required')
@@ -40,28 +40,36 @@ const postedItemFormSchema = z.object({
 });
 
 // Type for form values
-type PostedItemFormValues = z.infer<typeof postedItemFormSchema>;
+type UpdatePostedItemFormValues = z.infer<typeof updatePostedItemFormSchema>;
 
 // Props interface
-interface PostedItemFormProps {
-  onSuccess?: () => void; // Called when post is created successfully (e.g., close modal)
-  onCancel?: () => void; // Called when user cancels (e.g., close modal)
+interface UpdatePostedItemFormProps {
+  postedItemId: string;
+  initialData: {
+    title: string;
+    details: string;
+    imageUrl?: string;
+  };
+  onSuccess?: () => void; // Called when post is updated successfully
+  onCancel?: () => void; // Called when user cancels
 }
 
-export const PostedItemForm: React.FC<PostedItemFormProps> = ({
+export const UpdatePostedItemForm: React.FC<UpdatePostedItemFormProps> = ({
+  postedItemId,
+  initialData,
   onSuccess,
   onCancel,
 }) => {
   // Form management with validation
-  const form = useForm<PostedItemFormValues>({
-    resolver: zodResolver(postedItemFormSchema),
+  const form = useForm<UpdatePostedItemFormValues>({
+    resolver: zodResolver(updatePostedItemFormSchema),
     defaultValues: {
-      title: '',
-      details: '',
+      title: initialData.title,
+      details: initialData.details,
     },
   });
 
-  // Image preview functionality
+  // Image preview functionality with initial image
   const {
     selectedFile,
     previewUrl,
@@ -69,16 +77,16 @@ export const PostedItemForm: React.FC<PostedItemFormProps> = ({
     clearImage,
     fileInputRef,
     triggerFileSelect,
-  } = useImagePreview();
+  } = useImagePreview(initialData.imageUrl);
 
   // Cleanup preview URL on unmount to prevent memory leaks
   useEffect(() => {
     return () => {
-      if (previewUrl) {
+      if (previewUrl && previewUrl !== initialData.imageUrl) {
         URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [previewUrl]);
+  }, [previewUrl, initialData.imageUrl]);
 
   // Handle file input change
   const handleFileInputChange = (
@@ -104,37 +112,26 @@ export const PostedItemForm: React.FC<PostedItemFormProps> = ({
   };
 
   // Form submission
-  const onSubmit = async (values: PostedItemFormValues) => {
-    // Validate that image is selected
-    if (!selectedFile) {
-      toast.error('Please select an image for your posted item');
-      return;
-    }
-
+  const onSubmit = async (values: UpdatePostedItemFormValues) => {
     try {
-      const result = await createPostedItem({
+      const result = await updatePostedItem(postedItemId, {
         title: values.title,
         details: values.details,
-        image: selectedFile,
+        image: selectedFile || undefined,
       });
 
       if (result.status === 'SUCCESS') {
         toast.success(result.message);
-
-        // Reset form and clear image
-        form.reset();
-        clearImage();
-
-        // Call success callback (e.g., close modal)
         onSuccess?.();
       } else {
-        toast.error(result.message || 'Failed to create post');
+        toast.error(result.message || 'Failed to update post');
 
         // Handle field-specific errors from the server
+        // If it was a validation error, it would have fieldErrors
         if (result.fieldErrors) {
           Object.entries(result.fieldErrors).forEach(([field, errors]) => {
             if (errors && errors.length > 0) {
-              form.setError(field as keyof PostedItemFormValues, {
+              form.setError(field as keyof UpdatePostedItemFormValues, {
                 type: 'manual',
                 message: errors[0],
               });
@@ -143,13 +140,13 @@ export const PostedItemForm: React.FC<PostedItemFormProps> = ({
         }
       }
     } catch (error) {
-      console.error('Failed to create posted item:', error);
+      console.error('Failed to update posted item:', error);
       toast.error('Something went wrong. Please try again.');
     }
   };
 
   // Check if form can be submitted
-  const isFormValid = form.formState.isValid && selectedFile;
+  const isFormValid = form.formState.isValid;
   const isSubmitting = form.formState.isSubmitting;
 
   return (
@@ -220,7 +217,7 @@ export const PostedItemForm: React.FC<PostedItemFormProps> = ({
               >
                 <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <p className="text-gray-600 mb-2">
-                  Click to upload or drag and drop
+                  Click to change image or drag and drop
                 </p>
                 <p className="text-sm text-gray-500">
                   PNG, JPG, GIF up to 10MB
@@ -272,12 +269,12 @@ export const PostedItemForm: React.FC<PostedItemFormProps> = ({
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Post...
+                  Updating Post...
                 </>
               ) : (
                 <>
                   <Upload className="mr-2 h-4 w-4" />
-                  Create Post
+                  Update Post
                 </>
               )}
             </Button>

@@ -34,7 +34,7 @@ import {
 
 import { PostedItemWithDetails } from '../../queries/get-posted-items';
 import { deletePostedItem } from '../../actions/delete-posted-item';
-import { PostedItemForm } from './posted-item-form';
+import { UpdatePostedItemForm } from './update-posted-item-form';
 import {
   Dialog,
   DialogContent,
@@ -239,14 +239,13 @@ export const PostedItemCard = ({
           <DialogHeader>
             <DialogTitle>Edit Post</DialogTitle>
           </DialogHeader>
-          <PostedItemForm
-            mode="edit"
+          <UpdatePostedItemForm
+            postedItemId={postedItem.id}
             initialData={{
               title: postedItem.title,
               details: postedItem.details,
               imageUrl: postedItem.imageSecureUrl || undefined,
             }}
-            postedItemId={postedItem.id}
             onSuccess={handleEditSuccess}
             onCancel={() => setShowEditDialog(false)}
           />

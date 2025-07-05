@@ -21,10 +21,12 @@ interface UseImagePreviewReturn {
   triggerFileSelect: () => void;
 }
 
-export const useImagePreview = (): UseImagePreviewReturn => {
+export const useImagePreview = (initialUrl?: string): UseImagePreviewReturn => {
   // State for selected file and preview URL
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    initialUrl || null
+  );
 
   // Ref for the hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null);

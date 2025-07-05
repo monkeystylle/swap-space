@@ -6,10 +6,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ImageIcon, Plus } from 'lucide-react';
-
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -65,10 +62,7 @@ export const CreatePostTrigger: React.FC = () => {
       {/* Main Trigger Area - Facebook Style */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border shadow-sm">
         {/* Top Section - Main clickable area */}
-        <div
-          className="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-t-lg"
-          onClick={openModal}
-        >
+        <div className="flex items-center gap-3 p-4   transition-colors rounded-t-lg">
           {/* User Avatar */}
           <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-blue-500 text-white">
@@ -77,32 +71,12 @@ export const CreatePostTrigger: React.FC = () => {
           </Avatar>
 
           {/* Placeholder Text Input (fake) */}
-          <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          <div
+            onClick={openModal}
+            className="cursor-pointer  flex-1 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
             What are you trading today, {user.username}?
           </div>
-        </div>
-
-        {/* Bottom Section - Action Buttons */}
-        <div className="flex items-center justify-around border-t p-2">
-          {/* Photo Button */}
-          <Button
-            variant="ghost"
-            className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={openModal}
-          >
-            <ImageIcon className="h-5 w-5 text-green-500" />
-            <span className="hidden sm:inline">Photo</span>
-          </Button>
-
-          {/* Create Post Button */}
-          <Button
-            variant="ghost"
-            className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={openModal}
-          >
-            <Plus className="h-5 w-5 text-blue-500" />
-            <span className="hidden sm:inline">Create Post</span>
-          </Button>
         </div>
       </div>
 

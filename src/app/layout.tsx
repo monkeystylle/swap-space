@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { Navbar } from '@/components/navigation/navbar';
+import { ReactQueryProvider } from '@/providers/react-query/react-query-provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,10 +32,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <Navbar />
-          <div className="flex h-screen overflow-hidden border-collapse">
-            <main
-              className="
+          <ReactQueryProvider>
+            <Navbar />
+            <div className="flex h-screen overflow-hidden border-collapse">
+              <main
+                className="
                 min-h-screen flex-1
                 overflow-y-auto overflow-x-hidden
                 py-24 
@@ -42,13 +44,13 @@ export default function RootLayout({
                 flex flex-col
                 container
               "
-            >
-              {children}
-            </main>
-          </div>
+              >
+                {children}
+              </main>
+            </div>
+            <Toaster richColors />
+          </ReactQueryProvider>
         </ThemeProvider>
-
-        <Toaster richColors />
       </body>
     </html>
   );
