@@ -34,7 +34,10 @@ export default function RootLayout({
         <ThemeProvider>
           <ReactQueryProvider>
             <Navbar />
-            <div className="flex h-screen overflow-hidden border-collapse">
+            <div
+              className="flex h-screen overflow-hidden "
+              style={{ border: '1px solid red' }}
+            >
               <main
                 className="
                 min-h-screen flex-1
@@ -42,10 +45,11 @@ export default function RootLayout({
                 py-24 
                 
                 flex flex-col
-                container
+                
               "
+                style={{ border: '1px solid yellow' }}
               >
-                {children}
+                <div className="container">{children}</div>
               </main>
             </div>
             <Toaster richColors />

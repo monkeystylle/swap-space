@@ -54,7 +54,7 @@ async function SampleCloudinary() {
   }
 
   return (
-    <div>
+    <div style={{ border: '1px solid pink' }}>
       <h2 className="text-xl font-bold mb-4">Add a New Image</h2>
       <form
         action={create}

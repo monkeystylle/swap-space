@@ -8,7 +8,7 @@ import { PostedItemsList } from '@/features/bartering/components/posted-items/po
 
 const WallPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen " style={{ border: '1px solid pink' }}>
       {/* Main Container */}
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Page Header */}
