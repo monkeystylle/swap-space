@@ -13,7 +13,7 @@ import {
   toActionState,
   fromErrorToActionState,
 } from '@/utils/to-action-state';
-import { wallPath } from '@/paths';
+import { usersWallPath } from '@/paths';
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect';
 
 export const deletePostedItem = async (
@@ -58,12 +58,14 @@ export const deletePostedItem = async (
         id: postedItemId,
       },
     });
+    revalidatePath(usersWallPath(user.id));
+    return toActionState('SUCCESS', 'Posted item deleted successfully');
   } catch (error) {
     console.error('Failed to delete posted item:', error);
     return fromErrorToActionState(error);
   }
 
   // Refresh the wall page
-  revalidatePath(wallPath());
-  return toActionState('SUCCESS', 'Posted item deleted successfully');
+  // revalidatePath(wallPath());
+  // return toActionState('SUCCESS', 'Posted item deleted successfully');
 };

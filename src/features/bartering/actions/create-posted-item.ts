@@ -11,7 +11,7 @@ import {
   toActionState,
   fromErrorToActionState,
 } from '@/utils/to-action-state';
-import { wallPath } from '@/paths';
+import { usersWallPath } from '@/paths';
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect';
 
 // Define validation schema for the input
@@ -83,12 +83,12 @@ export const createPostedItem = async (
         status: 'OPEN', // Default status
       },
     });
+
+    // Revalidate the wall page to show the new post
+    revalidatePath(usersWallPath(user.id));
+    return toActionState('SUCCESS', 'Posted item created successfully');
   } catch (error) {
     console.error('Failed to create posted item:', error);
     return fromErrorToActionState(error);
   }
-
-  // Revalidate the wall page to show the new post
-  revalidatePath(wallPath());
-  return toActionState('SUCCESS', 'Posted item created successfully');
 };

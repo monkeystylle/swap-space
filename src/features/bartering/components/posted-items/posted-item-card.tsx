@@ -10,6 +10,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 import { MoreHorizontal, MessageCircle, Edit, Trash2 } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -31,10 +33,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-import { PostedItemWithDetails } from '../../queries/posted-item.types';
-import { deletePostedItem } from '../../actions/delete-posted-item';
-import { UpdatePostedItemForm } from './update-posted-item-form';
 import {
   Dialog,
   DialogContent,
@@ -42,9 +40,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+import { PostedItemWithDetails } from '../../queries/posted-item.types';
+import { deletePostedItem } from '../../actions/delete-posted-item';
+import { UpdatePostedItemForm } from './update-posted-item-form';
+
 interface PostedItemCardProps {
   postedItem: PostedItemWithDetails;
-  onUpdate?: () => void; // Callback to refresh the list after updates
+  onUpdate?: () => void; // Callback to refresh the list after updates (now optional since React Query handles it)
 }
 
 export const PostedItemCard = ({
@@ -53,7 +55,35 @@ export const PostedItemCard = ({
 }: PostedItemCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+
+  // React Query setup
+  const queryClient = useQueryClient();
+
+  // Delete mutation
+  const deletePostMutation = useMutation({
+    mutationFn: deletePostedItem,
+    onSuccess: result => {
+      if (result.status === 'SUCCESS') {
+        toast.success(result.message);
+
+        // Invalidate posted items queries to refresh the list
+        queryClient.invalidateQueries({
+          queryKey: ['posted-items'],
+        });
+
+        // Close dialog and call optional callback for backward compatibility
+        setShowDeleteDialog(false);
+        onUpdate?.();
+      } else {
+        toast.error(result.message);
+        console.error('Failed to delete post:', result.message);
+      }
+    },
+    onError: error => {
+      console.error('Unexpected error during deletion:', error);
+      toast.error('Something went wrong. Please try again.');
+    },
+  });
 
   // Format the date for display
   const timeAgo = formatDistanceToNow(new Date(postedItem.createdAt), {
@@ -69,29 +99,23 @@ export const PostedItemCard = ({
 
   // Handle post deletion
   const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      const result = await deletePostedItem(postedItem.id);
-
-      if (result.status === 'SUCCESS') {
-        onUpdate?.(); // Refresh the list
-        setShowDeleteDialog(false);
-      } else {
-        console.error('Failed to delete post:', result.message);
-        // Could add toast notification here
-      }
-    } catch (error) {
-      console.error('Unexpected error during deletion:', error);
-    } finally {
-      setIsDeleting(false);
-    }
+    deletePostMutation.mutate(postedItem.id);
   };
 
   // Handle successful edit
   const handleEditSuccess = () => {
     setShowEditDialog(false);
-    onUpdate?.(); // Refresh the list
+
+    // Invalidate posted items queries to refresh the list
+    queryClient.invalidateQueries({
+      queryKey: ['posted-items'],
+    });
+
+    // Call optional callback for backward compatibility
+    onUpdate?.();
   };
+
+  const isDeleting = deletePostMutation.isPending;
 
   return (
     <>
@@ -135,7 +159,7 @@ export const PostedItemCard = ({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-24 w-24" />
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">

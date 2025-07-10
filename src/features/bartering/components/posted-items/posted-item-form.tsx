@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Loader2, Upload, X, ImageIcon } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ import {
 
 import { useImagePreview } from '../../hooks/use-image-preview';
 import { createPostedItem } from '../../actions/create-posted-item';
+import { useAuth } from '@/features/auth/hooks/use-auth';
 
 // Form validation schema
 const postedItemFormSchema = z.object({
@@ -52,12 +54,58 @@ export const PostedItemForm: React.FC<PostedItemFormProps> = ({
   onSuccess,
   onCancel,
 }) => {
+  // Get current user for query invalidation
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
   // Form management with validation
   const form = useForm<PostedItemFormValues>({
     resolver: zodResolver(postedItemFormSchema),
     defaultValues: {
       title: '',
       details: '',
+    },
+  });
+
+  // React Query mutation for creating posted item
+  const createPostMutation = useMutation({
+    mutationFn: createPostedItem,
+    onSuccess: result => {
+      if (result.status === 'SUCCESS') {
+        toast.success(result.message);
+
+        // Reset form and clear image
+        form.reset();
+        clearImage();
+
+        // Invalidate posted items query to refresh the list
+        if (user?.id) {
+          queryClient.invalidateQueries({
+            queryKey: ['posted-items'],
+          });
+        }
+
+        // Call success callback (e.g., close modal)
+        onSuccess?.();
+      } else {
+        toast.error(result.message || 'Failed to create post');
+
+        // Handle field-specific errors from the server
+        if (result.fieldErrors) {
+          Object.entries(result.fieldErrors).forEach(([field, errors]) => {
+            if (errors && errors.length > 0) {
+              form.setError(field as keyof PostedItemFormValues, {
+                type: 'manual',
+                message: errors[0],
+              });
+            }
+          });
+        }
+      }
+    },
+    onError: error => {
+      console.error('Failed to create posted item:', error);
+      toast.error('Something went wrong. Please try again.');
     },
   });
 
@@ -111,46 +159,17 @@ export const PostedItemForm: React.FC<PostedItemFormProps> = ({
       return;
     }
 
-    try {
-      const result = await createPostedItem({
-        title: values.title,
-        details: values.details,
-        image: selectedFile,
-      });
-
-      if (result.status === 'SUCCESS') {
-        toast.success(result.message);
-
-        // Reset form and clear image
-        form.reset();
-        clearImage();
-
-        // Call success callback (e.g., close modal)
-        onSuccess?.();
-      } else {
-        toast.error(result.message || 'Failed to create post');
-
-        // Handle field-specific errors from the server
-        if (result.fieldErrors) {
-          Object.entries(result.fieldErrors).forEach(([field, errors]) => {
-            if (errors && errors.length > 0) {
-              form.setError(field as keyof PostedItemFormValues, {
-                type: 'manual',
-                message: errors[0],
-              });
-            }
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Failed to create posted item:', error);
-      toast.error('Something went wrong. Please try again.');
-    }
+    // Use React Query mutation instead of direct action call
+    createPostMutation.mutate({
+      title: values.title,
+      details: values.details,
+      image: selectedFile,
+    });
   };
 
   // Check if form can be submitted
   const isFormValid = form.formState.isValid && selectedFile;
-  const isSubmitting = form.formState.isSubmitting;
+  const isSubmitting = createPostMutation.isPending;
 
   return (
     <div className="space-y-6">

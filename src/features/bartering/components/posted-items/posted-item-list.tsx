@@ -28,7 +28,7 @@ export const PostedItemsList = ({
 }: PostedItemsListProps) => {
   const {
     data: postedItems = [],
-    isLoading,
+    isPending,
     error,
     refetch,
     isRefetching,
@@ -49,7 +49,7 @@ export const PostedItemsList = ({
   };
 
   // Loading state
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className={`space-y-6 ${className}`}>
         {[...Array(3)].map((_, index) => (
