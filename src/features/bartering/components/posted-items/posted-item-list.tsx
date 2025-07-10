@@ -13,10 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import {
-  getPostedItems,
-  PostedItemWithDetails,
-} from '../../queries/get-posted-items';
+import { getPostedItems } from '../../queries/get-posted-items';
+import { PostedItemWithDetails } from '../../queries/posted-item.types';
 import { PostedItemCard } from './posted-item-card';
 
 interface PostedItemsListProps {

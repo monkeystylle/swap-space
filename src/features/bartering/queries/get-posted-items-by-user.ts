@@ -1,6 +1,6 @@
 /**
- * Get all posted items for the wall feed
- * Returns posts with user info and offer counts
+ * Get posted items for a specific user
+ * Useful for user profile pages
  */
 
 'use server';
@@ -10,16 +10,21 @@ import { getAuth } from '@/features/auth/queries/get-auth';
 import { PostedItemWithDetails } from './posted-item.types';
 
 /**
- * Get all posted items for the wall feed
- * Returns posts with user info and offer counts
+ * Get posted items for a specific user
+ * Useful for user profile pages
  */
-export const getPostedItems = async (): Promise<PostedItemWithDetails[]> => {
+export const getPostedItemsByUser = async (
+  userId: string
+): Promise<PostedItemWithDetails[]> => {
   try {
     // Get current user to determine ownership
     const { user: currentUser } = await getAuth();
 
-    // Fetch all posted items with user and offer count
+    // Fetch posted items for specific user
     const postedItems = await prisma.postedItem.findMany({
+      where: {
+        userId: userId,
+      },
       include: {
         user: {
           select: {
@@ -35,11 +40,11 @@ export const getPostedItems = async (): Promise<PostedItemWithDetails[]> => {
         },
       },
       orderBy: {
-        createdAt: 'desc', // Show newest posts first
+        createdAt: 'desc',
       },
     });
 
-    // Add ownership flag to each post
+    // Add ownership flag
     const postedItemsWithOwnership = postedItems.map(item => ({
       ...item,
       isOwner: currentUser ? item.userId === currentUser.id : false,
@@ -47,7 +52,7 @@ export const getPostedItems = async (): Promise<PostedItemWithDetails[]> => {
 
     return postedItemsWithOwnership;
   } catch (error) {
-    console.error('Failed to fetch posted items:', error);
+    console.error('Failed to fetch user posted items:', error);
     return [];
   }
 };
