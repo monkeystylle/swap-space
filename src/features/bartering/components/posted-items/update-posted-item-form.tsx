@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Loader2, Upload, X, ImageIcon } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,12 +61,57 @@ export const UpdatePostedItemForm: React.FC<UpdatePostedItemFormProps> = ({
   onSuccess,
   onCancel,
 }) => {
+  // React Query setup
+  const queryClient = useQueryClient();
+
   // Form management with validation
   const form = useForm<UpdatePostedItemFormValues>({
     resolver: zodResolver(updatePostedItemFormSchema),
     defaultValues: {
       title: initialData.title,
       details: initialData.details,
+    },
+  });
+
+  // React Query mutation for updating posted item
+  const updatePostMutation = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { title: string; details: string; image?: File };
+    }) => updatePostedItem(id, data),
+    onSuccess: result => {
+      if (result.status === 'SUCCESS') {
+        toast.success(result.message);
+
+        // Invalidate posted items query to refresh the list
+        queryClient.invalidateQueries({
+          queryKey: ['posted-items'],
+        });
+
+        // Call success callback (e.g., close modal)
+        onSuccess?.();
+      } else {
+        toast.error(result.message || 'Failed to update post');
+
+        // Handle field-specific errors from the server
+        if (result.fieldErrors) {
+          Object.entries(result.fieldErrors).forEach(([field, errors]) => {
+            if (errors && errors.length > 0) {
+              form.setError(field as keyof UpdatePostedItemFormValues, {
+                type: 'manual',
+                message: errors[0],
+              });
+            }
+          });
+        }
+      }
+    },
+    onError: error => {
+      console.error('Failed to update posted item:', error);
+      toast.error('Something went wrong. Please try again.');
     },
   });
 
@@ -113,41 +159,20 @@ export const UpdatePostedItemForm: React.FC<UpdatePostedItemFormProps> = ({
 
   // Form submission
   const onSubmit = async (values: UpdatePostedItemFormValues) => {
-    try {
-      const result = await updatePostedItem(postedItemId, {
+    // Use React Query mutation instead of direct action call
+    updatePostMutation.mutate({
+      id: postedItemId,
+      data: {
         title: values.title,
         details: values.details,
         image: selectedFile || undefined,
-      });
-
-      if (result.status === 'SUCCESS') {
-        toast.success(result.message);
-        onSuccess?.();
-      } else {
-        toast.error(result.message || 'Failed to update post');
-
-        // Handle field-specific errors from the server
-        // If it was a validation error, it would have fieldErrors
-        if (result.fieldErrors) {
-          Object.entries(result.fieldErrors).forEach(([field, errors]) => {
-            if (errors && errors.length > 0) {
-              form.setError(field as keyof UpdatePostedItemFormValues, {
-                type: 'manual',
-                message: errors[0],
-              });
-            }
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Failed to update posted item:', error);
-      toast.error('Something went wrong. Please try again.');
-    }
+      },
+    });
   };
 
   // Check if form can be submitted
   const isFormValid = form.formState.isValid;
-  const isSubmitting = form.formState.isSubmitting;
+  const isSubmitting = updatePostMutation.isPending;
 
   return (
     <div className="space-y-6">
