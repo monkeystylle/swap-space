@@ -1,88 +1,51 @@
 /**
  * PostedItemsList Component
- * Fetches and displays all posted items in a feed format
+ * Fetches and displays posted items for a specific user using React Query
  * Handles loading states, empty states, and real-time updates
  */
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, Package } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { getPostedItems } from '../../queries/get-posted-items';
-import { PostedItemWithDetails } from '../../queries/posted-item.types';
+import { getPostedItemsByUser } from '../../queries/get-posted-items-by-user';
 import { PostedItemCard } from './posted-item-card';
 
 interface PostedItemsListProps {
-  // Optional filter for user-specific posts
-  userId?: string;
-  // Option to show only open posts
-  openOnly?: boolean;
+  // Required user ID to fetch posts for
+  userId: string;
   className?: string;
 }
 
 export const PostedItemsList = ({
   userId,
-  openOnly = false,
   className = '',
 }: PostedItemsListProps) => {
-  const [postedItems, setPostedItems] = useState<PostedItemWithDetails[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Fetch posted items data
-  const fetchPostedItems = async (isRefresh = false) => {
-    try {
-      if (isRefresh) {
-        setIsRefreshing(true);
-      } else {
-        setIsLoading(true);
-      }
-      setError(null);
-
-      // For now, we'll use the main getPostedItems function
-      // In the future, we can extend this to support userId and openOnly filters
-      const items = await getPostedItems();
-
-      // Apply client-side filtering if needed
-      let filteredItems = items;
-
-      if (userId) {
-        filteredItems = filteredItems.filter(item => item.userId === userId);
-      }
-
-      if (openOnly) {
-        filteredItems = filteredItems.filter(item => item.status === 'OPEN');
-      }
-
-      setPostedItems(filteredItems);
-    } catch (err) {
-      console.error('Failed to fetch posted items:', err);
-      setError('Failed to load posts. Please try again.');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  // Initial data fetch
-  useEffect(() => {
-    fetchPostedItems();
-  }, [userId, openOnly]); // Refetch when filters change
+  const {
+    data: postedItems = [],
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = useQuery({
+    queryKey: ['posted-items', userId],
+    queryFn: () => getPostedItemsByUser(userId),
+    enabled: !!userId, // Only run query if userId is provided
+  });
 
   // Handle refresh
   const handleRefresh = () => {
-    fetchPostedItems(true);
+    refetch();
   };
 
   // Handle individual item updates (after edit/delete)
   const handleItemUpdate = () => {
-    fetchPostedItems(true);
+    refetch();
   };
 
   // Loading state
@@ -133,7 +96,7 @@ export const PostedItemsList = ({
                 Something went wrong
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                {error}
+                Failed to load posts. Please try again.
               </p>
               <Button onClick={handleRefresh} variant="outline" size="sm">
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -154,18 +117,10 @@ export const PostedItemsList = ({
           <CardContent className="p-8">
             <Package className="h-16 w-16 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              {userId
-                ? 'No posts yet'
-                : openOnly
-                ? 'No open posts available'
-                : 'No posts to show'}
+              No posts yet
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              {userId
-                ? "This user hasn't posted any items yet."
-                : openOnly
-                ? 'There are currently no open posts available for trading.'
-                : 'Be the first to share something for trade!'}
+              This user hasn&apos;t posted any items yet.
             </p>
             <Button onClick={handleRefresh} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -180,26 +135,22 @@ export const PostedItemsList = ({
   // Main content with posts
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Refresh button - optional, could be hidden */}
+      {/* Refresh button */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          {userId
-            ? 'Posted Items'
-            : openOnly
-            ? 'Available for Trading'
-            : 'Recent Posts'}
+          Posted Items
         </h2>
         <Button
           onClick={handleRefresh}
           variant="ghost"
           size="sm"
-          disabled={isRefreshing}
+          disabled={isRefetching}
           className="text-gray-600 dark:text-gray-400"
         >
           <RefreshCw
-            className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`}
+            className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`}
           />
-          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          {isRefetching ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
 

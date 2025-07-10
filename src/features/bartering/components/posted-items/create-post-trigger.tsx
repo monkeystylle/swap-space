@@ -16,6 +16,8 @@ import {
 
 import { PostedItemForm } from './posted-item-form';
 import { useAuth } from '@/features/auth/hooks/use-auth';
+import Link from 'next/link';
+import { usersWallPath } from '@/paths';
 
 export const CreatePostTrigger: React.FC = () => {
   // Modal state
@@ -64,11 +66,13 @@ export const CreatePostTrigger: React.FC = () => {
         {/* Top Section - Main clickable area */}
         <div className="flex items-center gap-3 p-4   transition-colors rounded-t-lg">
           {/* User Avatar */}
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-blue-500 text-white">
-              {getUserInitials(user.username)}
-            </AvatarFallback>
-          </Avatar>
+          <Link href={usersWallPath(user.id)}>
+            <Avatar className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity">
+              <AvatarFallback className="bg-blue-500 text-white">
+                {getUserInitials(user.username)}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
 
           {/* Placeholder Text Input (fake) */}
           <div
