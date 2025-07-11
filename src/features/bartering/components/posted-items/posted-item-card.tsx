@@ -189,7 +189,7 @@ export const PostedItemCard = ({
           </h3>
 
           {/* Post Details */}
-          <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 leading-relaxed">
+          <p className="whitespace-pre-wrap break-all text-gray-700 dark:text-gray-300 text-sm mb-4 leading-relaxed">
             {postedItem.details}
           </p>
 
