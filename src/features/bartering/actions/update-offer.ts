@@ -7,14 +7,14 @@
 
 import { z } from 'zod';
 import cloudinary from '@/lib/cloudinary';
-import { revalidatePath } from 'next/cache';
+
 import { prisma } from '@/lib/prisma';
 import {
   ActionState,
   toActionState,
   fromErrorToActionState,
 } from '@/utils/to-action-state';
-import { wallPath } from '@/paths';
+
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect';
 
 // Define validation schema for optional form fields
@@ -129,12 +129,14 @@ export const updateOffer = async (
       },
       data: updateData,
     });
+
+    return toActionState('SUCCESS', 'Offer updated successfully');
   } catch (error) {
     console.error('Failed to update offer:', error);
     return fromErrorToActionState(error);
   }
 
   // Refresh the wall page to show updated content
-  revalidatePath(wallPath());
-  return toActionState('SUCCESS', 'Offer updated successfully');
+  // revalidatePath(wallPath());
+  // return toActionState('SUCCESS', 'Offer updated successfully');
 };

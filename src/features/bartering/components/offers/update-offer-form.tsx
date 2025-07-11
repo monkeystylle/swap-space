@@ -1,6 +1,6 @@
 /**
- * OfferForm Component
- * Form for creating new offers on posted items with content and optional image
+ * UpdateOfferForm Component
+ * Form for editing existing offers with content and optional image
  */
 
 'use client';
@@ -24,56 +24,57 @@ import {
 } from '@/components/ui/form';
 
 import { useImagePreview } from '../../hooks/use-image-preview';
-import { createOffer } from '../../actions/create-offer';
+import { updateOffer } from '../../actions/update-offer';
 
 // Form validation schema
-const offerSchema = z.object({
+const updateOfferSchema = z.object({
   content: z
     .string()
     .min(1, 'Offer content is required')
     .max(1024, 'Offer content must be less than 1024 characters'),
 });
 
-type OfferFormValues = z.infer<typeof offerSchema>;
+type UpdateOfferFormValues = z.infer<typeof updateOfferSchema>;
 
-interface OfferFormProps {
-  postedItemId: string;
+interface UpdateOfferFormProps {
+  offerId: string;
+  initialData: {
+    content: string;
+    imageSecureUrl?: string | null;
+  };
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export const OfferForm = ({
-  postedItemId,
+export const UpdateOfferForm = ({
+  offerId,
+  initialData,
   onSuccess,
   onCancel,
-}: OfferFormProps) => {
+}: UpdateOfferFormProps) => {
   // React Query setup
   const queryClient = useQueryClient();
 
   // Form management with validation
-  const form = useForm<OfferFormValues>({
-    resolver: zodResolver(offerSchema),
+  const form = useForm<UpdateOfferFormValues>({
+    resolver: zodResolver(updateOfferSchema),
     defaultValues: {
-      content: '',
+      content: initialData.content,
     },
   });
 
-  // React Query mutation for creating offer
-  const createOfferMutation = useMutation({
+  // React Query mutation for updating offer
+  const updateOfferMutation = useMutation({
     mutationFn: ({
-      postedItemId,
+      id,
       data,
     }: {
-      postedItemId: string;
+      id: string;
       data: { content: string; image?: File };
-    }) => createOffer(postedItemId, data),
+    }) => updateOffer(id, data),
     onSuccess: result => {
       if (result.status === 'SUCCESS') {
         toast.success(result.message);
-
-        // Reset form and clear image
-        form.reset();
-        clearImage();
 
         // Invalidate offers query to refresh the list
         queryClient.invalidateQueries({
@@ -83,13 +84,13 @@ export const OfferForm = ({
         // Call success callback (e.g., close modal)
         onSuccess?.();
       } else {
-        toast.error(result.message || 'Failed to create offer');
+        toast.error(result.message || 'Failed to update offer');
 
         // Handle field-specific errors from the server
         if (result.fieldErrors) {
           Object.entries(result.fieldErrors).forEach(([field, errors]) => {
             if (errors && errors.length > 0) {
-              form.setError(field as keyof OfferFormValues, {
+              form.setError(field as keyof UpdateOfferFormValues, {
                 type: 'manual',
                 message: errors[0],
               });
@@ -99,19 +100,19 @@ export const OfferForm = ({
       }
     },
     onError: error => {
-      console.error('Failed to create offer:', error);
+      console.error('Failed to update offer:', error);
       toast.error('Something went wrong. Please try again.');
     },
   });
 
-  // Image preview functionality
+  // Image preview functionality with initial image
   const {
     selectedFile,
     previewUrl,
     fileInputRef,
     handleFileSelect,
     clearImage,
-  } = useImagePreview();
+  } = useImagePreview(initialData.imageSecureUrl || undefined);
 
   // Helper to check if image is selected
   const isImageSelected = Boolean(selectedFile || previewUrl);
@@ -125,10 +126,10 @@ export const OfferForm = ({
   };
 
   // Form submission
-  const onSubmit = async (values: OfferFormValues) => {
+  const onSubmit = async (values: UpdateOfferFormValues) => {
     // Use React Query mutation instead of direct action call
-    createOfferMutation.mutate({
-      postedItemId,
+    updateOfferMutation.mutate({
+      id: offerId,
       data: {
         content: values.content,
         image: selectedFile || undefined,
@@ -138,7 +139,7 @@ export const OfferForm = ({
 
   // Check if form can be submitted
   const isFormValid = form.formState.isValid;
-  const isSubmitting = createOfferMutation.isPending;
+  const isSubmitting = updateOfferMutation.isPending;
 
   return (
     <div className="space-y-4">
@@ -151,11 +152,11 @@ export const OfferForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-medium">
-                  Your Offer *
+                  Offer Content *
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Describe your offer for this item..."
+                    placeholder="Update your offer details..."
                     className="min-h-[120px] resize-none"
                     {...field}
                   />
@@ -253,10 +254,10 @@ export const OfferForm = ({
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
+                  Updating...
                 </>
               ) : (
-                'Create Offer'
+                'Update Offer'
               )}
             </Button>
           </div>

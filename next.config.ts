@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '15mb', // Set higher than Cloudinary's 10MB limit
+    },
+  },
 };
 
 export default nextConfig;

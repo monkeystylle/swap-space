@@ -43,6 +43,8 @@ import {
 import { PostedItemWithDetails } from '../../queries/posted-item.types';
 import { deletePostedItem } from '../../actions/delete-posted-item';
 import { UpdatePostedItemForm } from './update-posted-item-form';
+import { ViewOffersModal } from '../offers/view-offers-modal';
+import { CreateOfferModal } from '../offers/create-offer-modal';
 
 interface PostedItemCardProps {
   postedItem: PostedItemWithDetails;
@@ -55,6 +57,8 @@ export const PostedItemCard = ({
 }: PostedItemCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showOffersModal, setShowOffersModal] = useState(false);
+  const [showCreateOfferModal, setShowCreateOfferModal] = useState(false);
 
   // React Query setup
   const queryClient = useQueryClient();
@@ -214,7 +218,8 @@ export const PostedItemCard = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-600 dark:text-gray-400 hover:text-blue-600"
+                className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-blue-600"
+                onClick={() => setShowOffersModal(true)}
               >
                 <MessageCircle className="h-4 w-4 mr-1" />
                 <span className="text-sm">
@@ -227,7 +232,12 @@ export const PostedItemCard = ({
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
               {!postedItem.isOwner && postedItem.status === 'OPEN' && (
-                <Button size="sm" variant="outline" className="text-sm">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="cursor-pointer text-sm"
+                  onClick={() => setShowCreateOfferModal(true)}
+                >
                   Make Offer
                 </Button>
               )}
@@ -277,6 +287,20 @@ export const PostedItemCard = ({
           />
         </DialogContent>
       </Dialog>
+
+      {/* View Offers Modal */}
+      <ViewOffersModal
+        isOpen={showOffersModal}
+        onClose={() => setShowOffersModal(false)}
+        postedItem={postedItem}
+      />
+
+      {/* Create/Edit Offer Modal */}
+      <CreateOfferModal
+        isOpen={showCreateOfferModal}
+        onClose={() => setShowCreateOfferModal(false)}
+        postedItem={postedItem}
+      />
     </>
   );
 };
