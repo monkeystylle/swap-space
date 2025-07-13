@@ -46,6 +46,9 @@ import { UpdatePostedItemForm } from './update-posted-item-form';
 import { ViewOffersModal } from '../offers/view-offers-modal';
 import { CreateOfferModal } from '../offers/create-offer-modal';
 import { getAvatarColor } from '@/utils/avatar-colors';
+import { capitalizeFirstLetter } from '@/utils/text-utils';
+import Link from 'next/link';
+import { usersWallPath } from '@/paths';
 
 interface PostedItemCardProps {
   postedItem: PostedItemWithDetails;
@@ -130,21 +133,26 @@ export const PostedItemCard = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               {/* User Avatar */}
-              <Avatar className="h-10 w-10">
-                <AvatarFallback
-                  className={`${getAvatarColor(
-                    postedItem.user.id
-                  )}  text-sm font-medium`}
-                >
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
+              <Link href={usersWallPath(postedItem.user.id)}>
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback
+                    className={`${getAvatarColor(
+                      postedItem.user.id
+                    )}  text-sm font-medium`}
+                  >
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
 
               {/* User Info & Timestamp */}
               <div className="flex flex-col">
-                <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
-                  {postedItem.user.username}
-                </span>
+                <Link href={usersWallPath(postedItem.user.id)}>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                    {capitalizeFirstLetter(postedItem.user.username)}
+                  </span>
+                </Link>
+
                 <div className="flex items-center space-x-2">
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {timeAgo}

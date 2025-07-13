@@ -7,7 +7,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { X, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 import {
   Dialog,
@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -55,17 +55,17 @@ export const CreateOfferModal = ({
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3 border-b">
           <DialogTitle className="text-lg font-semibold">
             {offerEligibility?.existingOffer
-              ? 'Edit Your Offer'
+              ? 'Make an Offer'
               : 'Make an Offer'}
           </DialogTitle>
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
             className="h-6 w-6 rounded-full"
           >
             <X className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto">
