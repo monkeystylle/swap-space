@@ -20,3 +20,6 @@ export const postedItemEditPath = (postedItemId: string) =>
 //wall
 
 export const usersWallPath = (userId: string) => `/wall/${userId}`;
+
+// Disclaimer path
+export const disclaimerPath = () => '/disclaimer';
