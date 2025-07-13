@@ -18,6 +18,7 @@ import { PostedItemForm } from './posted-item-form';
 import { useAuth } from '@/features/auth/hooks/use-auth';
 import Link from 'next/link';
 import { usersWallPath } from '@/paths';
+import { getAvatarColor } from '@/utils/avatar-colors';
 
 export const CreatePostTrigger: React.FC = () => {
   // Modal state
@@ -68,7 +69,7 @@ export const CreatePostTrigger: React.FC = () => {
           {/* User Avatar */}
           <Link href={usersWallPath(user.id)}>
             <Avatar className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity">
-              <AvatarFallback className="bg-blue-500 text-white">
+              <AvatarFallback className={`${getAvatarColor(user.id)}`}>
                 {getUserInitials(user.username)}
               </AvatarFallback>
             </Avatar>

@@ -6,16 +6,12 @@
 
 'use client';
 
-import { X } from 'lucide-react';
-
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 
 import { PostedItemWithDetails } from '../../queries/posted-item.types';
 import { OffersList } from './offers-list';
@@ -34,27 +30,16 @@ export const ViewOffersModal = ({
 }: ViewOffersModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="!max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 px-4 py-3 border-b">
-          <DialogTitle className="text-lg font-semibold">
+      <DialogContent className="!max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 drop-shadow-lg [&>button]:top-5 [&>button]:right-4 ">
+        <DialogHeader className="px-4 py-4 border-b-2 ">
+          <DialogTitle className="text-lg font-semibold text-center">
             {postedItem.title} - Offers
           </DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-6 w-6 rounded-full"
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto">
           {/* Posted Item Display - Full width, no padding */}
           <PostedItemModalDisplay postedItem={postedItem} />
-
-          {/* Separator */}
-          <Separator />
 
           {/* Offers Section */}
           <div className="px-4 py-4">

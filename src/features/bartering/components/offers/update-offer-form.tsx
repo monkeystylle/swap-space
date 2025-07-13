@@ -190,7 +190,7 @@ export const UpdateOfferForm = ({
                   <img
                     src={previewUrl}
                     alt="Offer preview"
-                    className="w-full max-w-sm h-auto object-cover rounded-lg border"
+                    className="w-full h-64 object-cover rounded-lg border"
                   />
                   <Button
                     type="button"

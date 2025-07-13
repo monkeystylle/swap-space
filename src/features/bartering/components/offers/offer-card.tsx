@@ -42,6 +42,7 @@ import { OfferWithDetails } from '../../queries/offer.types';
 import { deleteOffer } from '../../actions/delete-offer';
 import { UpdateOfferForm } from './update-offer-form';
 import Image from 'next/image';
+import { getAvatarColor } from '@/utils/avatar-colors';
 
 interface OfferCardProps {
   offer: OfferWithDetails;
@@ -150,14 +151,18 @@ export const OfferCard = ({ offer, onUpdate }: OfferCardProps) => {
       <div className="flex items-start space-x-3 py-2">
         {/* User Avatar - Smaller */}
         <Avatar className="h-8 w-8 flex-shrink-0">
-          <AvatarFallback className="bg-blue-100 text-blue-600 font-medium text-sm">
+          <AvatarFallback
+            className={`${getAvatarColor(
+              offer.user.id
+            )} text-white font-medium text-sm`}
+          >
             {offer.user.username.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
 
         {/* Offer Content */}
         <div className="flex-1 min-w-0">
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-3 py-2 max-w-md">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-3 py-2 ">
             <div className="flex items-center justify-between mb-1">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                 {offer.user.username}

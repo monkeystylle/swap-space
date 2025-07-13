@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
 import { PostedItemWithDetails } from '../../queries/posted-item.types';
+import { getAvatarColor } from '@/utils/avatar-colors';
 
 interface PostedItemModalDisplayProps {
   postedItem: PostedItemWithDetails;
@@ -40,7 +41,11 @@ export const PostedItemModalDisplay = ({
         <div className="flex items-center space-x-3">
           {/* User Avatar */}
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-blue-600 text-white text-sm font-medium">
+            <AvatarFallback
+              className={`${getAvatarColor(
+                postedItem.user.id
+              )}  text-sm font-medium`}
+            >
               {userInitials}
             </AvatarFallback>
           </Avatar>
