@@ -28,7 +28,7 @@ export const PostedItemGridCard = ({
     >
       <CardContent className="p-0">
         {/* Image Section */}
-        <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-t-lg overflow-hidden">
+        <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800  overflow-hidden">
           {postedItem.imageSecureUrl ? (
             <Image
               src={postedItem.imageSecureUrl}
@@ -67,7 +67,7 @@ export const PostedItemGridCard = ({
           </h3>
 
           {/* Offers Count */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col">
             <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
               <MessageCircle className="h-4 w-4" />
               <span className="text-sm">

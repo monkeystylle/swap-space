@@ -41,6 +41,7 @@ export const searchPostedItems = async ({
         OR: Array<{
           title?: { contains: string; mode: 'insensitive' };
           details?: { contains: string; mode: 'insensitive' };
+          user?: { username: { contains: string; mode: 'insensitive' } };
         }>;
       }>;
     } = {
@@ -64,6 +65,14 @@ export const searchPostedItems = async ({
               details: {
                 contains: word,
                 mode: 'insensitive' as const,
+              },
+            },
+            {
+              user: {
+                username: {
+                  contains: word,
+                  mode: 'insensitive' as const,
+                },
               },
             },
           ],

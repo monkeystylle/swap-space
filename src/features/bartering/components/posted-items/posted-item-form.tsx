@@ -83,6 +83,10 @@ export const PostedItemForm: React.FC<PostedItemFormProps> = ({
           queryClient.invalidateQueries({
             queryKey: ['posted-items'],
           });
+          // Also invalidate search query to refresh homepage
+          queryClient.invalidateQueries({
+            queryKey: ['search-posted-items'],
+          });
         }
 
         // Call success callback (e.g., close modal)

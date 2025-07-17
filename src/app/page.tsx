@@ -19,21 +19,21 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-6">
         {/* Header */}
-        <div className="text-center">
+        {/* <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             Marketplace
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Discover and trade items with others
           </p>
-        </div>
+        </div> */}
 
         {/* Search Bar */}
-        <div className="flex justify-start">
+        <div className="flex justify-start w-full">
           <SearchBar
             onSearch={handleSearch}
             initialValue={searchTerm || ''}
-            placeholder="Search items... (e.g., sofa tarlac)"
+            placeholder="Search items... "
           />
         </div>
 

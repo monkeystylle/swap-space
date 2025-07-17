@@ -32,7 +32,7 @@ export const ViewOffersModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="!max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 drop-shadow-lg [&>button]:top-5 [&>button]:right-4 ">
         <DialogHeader className="px-4 py-4 border-b-2 ">
-          <DialogTitle className="text-lg font-semibold text-center">
+          <DialogTitle className="text-lg font-semibold truncate max-w-[580px] mx-auto ">
             {postedItem.title} - Offers
           </DialogTitle>
         </DialogHeader>

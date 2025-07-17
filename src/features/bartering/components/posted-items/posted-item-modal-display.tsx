@@ -14,6 +14,9 @@ import { Badge } from '@/components/ui/badge';
 
 import { PostedItemWithDetails } from '../../queries/posted-item.types';
 import { getAvatarColor } from '@/utils/avatar-colors';
+import { capitalizeFirstLetter } from '@/utils/text-utils';
+import Link from 'next/link';
+import { usersWallPath } from '@/paths';
 
 interface PostedItemModalDisplayProps {
   postedItem: PostedItemWithDetails;
@@ -40,21 +43,26 @@ export const PostedItemModalDisplay = ({
       <div className="w-full px-4 py-3 bg-white dark:bg-gray-900">
         <div className="flex items-center space-x-3">
           {/* User Avatar */}
-          <Avatar className="h-10 w-10">
-            <AvatarFallback
-              className={`${getAvatarColor(
-                postedItem.user.id
-              )}  text-sm font-medium`}
-            >
-              {userInitials}
-            </AvatarFallback>
-          </Avatar>
+          <Link href={usersWallPath(postedItem.user.id)}>
+            <Avatar className="h-10 w-10">
+              <AvatarFallback
+                className={`${getAvatarColor(
+                  postedItem.user.id
+                )}  text-sm font-medium`}
+              >
+                {userInitials}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
 
           {/* User Info & Timestamp */}
           <div className="flex flex-col">
-            <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
-              {postedItem.user.username}
-            </span>
+            <Link href={usersWallPath(postedItem.user.id)}>
+              <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                {capitalizeFirstLetter(postedItem.user.username)}
+              </span>
+            </Link>
+
             <div className="flex items-center space-x-2">
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {timeAgo}

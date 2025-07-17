@@ -253,7 +253,7 @@ export const OfferCard = ({ offer, onUpdate }: OfferCardProps) => {
 
       {/* Edit Offer Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Offer</DialogTitle>
           </DialogHeader>
