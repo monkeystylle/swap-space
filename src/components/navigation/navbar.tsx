@@ -80,7 +80,7 @@ const Navbar = () => {
 
       {/* Middle - Navigation Icons (only show when logged in) */}
       {user && (
-        <div className="flex gap-x-1">
+        <div className="flex gap-x-8">
           <Tooltip delayDuration={700}>
             <TooltipTrigger asChild>
               <Button
@@ -94,7 +94,7 @@ const Navbar = () => {
                 asChild
               >
                 <Link href={homePath()}>
-                  <Home className="h-6 w-6" />
+                  <Home className="!h-7 !w-7" />
                 </Link>
               </Button>
             </TooltipTrigger>
@@ -116,7 +116,7 @@ const Navbar = () => {
                 asChild
               >
                 <Link href={usersWallPath(user.id)}>
-                  <User className="h-6 w-6" />
+                  <User className="!h-7 !w-7" />
                 </Link>
               </Button>
             </TooltipTrigger>
@@ -138,7 +138,7 @@ const Navbar = () => {
                 asChild
               >
                 <Link href={disclaimerPath()}>
-                  <Info className="h-6 w-6" />
+                  <Info className="!h-7 !w-7" />
                 </Link>
               </Button>
             </TooltipTrigger>
@@ -161,9 +161,9 @@ const Navbar = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative h-10 w-10 rounded-full bg-muted/50 hover:bg-muted"
+                  className="relative h-12 w-12 rounded-full bg-muted/50 hover:bg-muted"
                 >
-                  <Bell className="h-5 w-5" />
+                  <Bell className="!h-5 !w-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -176,9 +176,9 @@ const Navbar = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative h-10 w-10 rounded-full bg-muted/50 hover:bg-muted"
+                  className="relative h-12 w-12 rounded-full bg-muted/50 hover:bg-muted"
                 >
-                  <MessageCircle className="h-5 w-5" />
+                  <MessageCircle className="!h-5 !w-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
