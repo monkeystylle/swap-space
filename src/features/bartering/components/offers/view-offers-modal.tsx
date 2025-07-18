@@ -14,14 +14,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { PostedItemWithDetails } from '../../queries/posted-item.types';
 import { OffersList } from './offers-list';
 import { PostedItemModalDisplay } from '../posted-items/posted-item-modal-display';
 import { CreateOfferForm } from './create-offer-form';
 import { useAuth } from '@/features/auth/hooks/use-auth';
-import { canUserMakeOffer } from '../../queries/get-offers';
 
 interface ViewOffersModalProps {
   isOpen: boolean;
@@ -38,22 +37,40 @@ export const ViewOffersModal = ({
   const { user, isFetched } = useAuth();
   const queryClient = useQueryClient();
 
-  // Check if user can make an offer using the server function
-  const { data: offerEligibility, isPending: isCheckingEligibility } = useQuery(
-    {
-      queryKey: ['canUserMakeOffer', postedItem.id],
-      queryFn: () => canUserMakeOffer(postedItem.id),
-      enabled: isFetched && isOpen, // Only run when modal is open and auth is fetched
-    }
-  );
+  // Simple client-side checks - no server calls needed
+  const isOwner = user && postedItem.userId === user.id;
+  const isPostClosed = postedItem.status !== 'OPEN';
 
   const handleCreateOfferSuccess = () => {
     setShowCreateOfferModal(false);
-    // Invalidate the eligibility check so it updates to show user already has an offer
+    // Invalidate offers to refresh the count
     queryClient.invalidateQueries({
-      queryKey: ['canUserMakeOffer', postedItem.id],
+      queryKey: ['offers'],
     });
   };
+
+  // Get button state and text
+  const getButtonState = () => {
+    if (!isFetched) {
+      return { disabled: true, text: 'Loading...', message: null };
+    }
+
+    if (!user) {
+      return { disabled: true, text: 'Sign in to make offer', message: null };
+    }
+
+    if (isOwner) {
+      return { disabled: true, text: 'Your item', message: null };
+    }
+
+    if (isPostClosed) {
+      return { disabled: true, text: 'Item closed', message: null };
+    }
+
+    return { disabled: false, text: 'Make Offer', message: null };
+  };
+
+  const buttonState = getButtonState();
 
   return (
     <>
@@ -65,7 +82,7 @@ export const ViewOffersModal = ({
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto pb-20">
+          <div className="flex-1 overflow-y-auto pb-16">
             {/* Posted Item Display - Full width, no padding */}
             <PostedItemModalDisplay postedItem={postedItem} />
 
@@ -78,44 +95,19 @@ export const ViewOffersModal = ({
             </div>
           </div>
 
-          {/* Fixed Footer - Always show */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-4">
-            {!user ? (
-              <div className="text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  Sign in to make an offer
-                </p>
-                <Button disabled className="w-full" size="sm">
-                  Make Offer
-                </Button>
-              </div>
-            ) : isCheckingEligibility ? (
-              <div className="text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  Checking eligibility...
-                </p>
-                <Button disabled className="w-full" size="sm">
-                  Make Offer
-                </Button>
-              </div>
-            ) : offerEligibility?.canOffer ? (
-              <Button
-                onClick={() => setShowCreateOfferModal(true)}
-                className="w-full"
-                size="sm"
-              >
-                Make Offer
-              </Button>
-            ) : (
-              <div className="text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  {offerEligibility?.reason || 'Cannot make offer'}
-                </p>
-                <Button disabled className="w-full" size="sm">
-                  Make Offer
-                </Button>
-              </div>
-            )}
+          {/* Fixed Footer - Always show with consistent height */}
+          <div className="absolute   bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-5">
+            <Button
+              onClick={
+                buttonState.disabled
+                  ? undefined
+                  : () => setShowCreateOfferModal(true)
+              }
+              disabled={buttonState.disabled}
+              className="w-full max-w-xs "
+            >
+              {buttonState.text}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
