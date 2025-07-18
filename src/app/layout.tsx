@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/theme/theme-provider';
 import { Navbar } from '@/components/navigation/navbar';
 import { ReactQueryProvider } from '@/providers/react-query/react-query-provider';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import NextTopLoader from 'nextjs-toploader';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NextTopLoader color="var(--primary)" />
         <NuqsAdapter>
           <ThemeProvider>
             <ReactQueryProvider>

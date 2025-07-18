@@ -8,8 +8,8 @@ const ThemeProvider = ({ children }: ThemeProviderProps) => {
   return (
     <BaseThemeProvider
       attribute="class"
-      defaultTheme="system"
-      enableSystem
+      defaultTheme="dark"
+      enableSystem={false} // Disable system theme detection
       disableTransitionOnChange
     >
       {children}
