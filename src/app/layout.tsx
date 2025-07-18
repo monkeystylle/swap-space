@@ -4,6 +4,9 @@ import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { Navbar } from '@/components/navigation/navbar';
+import { ReactQueryProvider } from '@/providers/react-query/react-query-provider';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import NextTopLoader from 'nextjs-toploader';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,25 +33,33 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <Navbar />
-          <div className="flex h-screen overflow-hidden border-collapse">
-            <main
-              className="
+        <NextTopLoader color="var(--primary)" />
+        <NuqsAdapter>
+          <ThemeProvider>
+            <ReactQueryProvider>
+              <Navbar />
+              <div
+                className="flex h-screen overflow-hidden "
+                style={{ border: '1px solid red' }}
+              >
+                <main
+                  className="
                 min-h-screen flex-1
                 overflow-y-auto overflow-x-hidden
                 py-24 
                 
                 flex flex-col
-                container
+                
               "
-            >
-              {children}
-            </main>
-          </div>
-        </ThemeProvider>
-
-        <Toaster richColors />
+                  style={{ border: '1px solid yellow' }}
+                >
+                  {children}
+                </main>
+              </div>
+              <Toaster richColors />
+            </ReactQueryProvider>
+          </ThemeProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );
