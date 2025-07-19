@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
+import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/features/auth/hooks/use-auth';
 import { ConversationList } from '@/features/messaging/components/conversation-list';
 import { ChatInterface } from '@/features/messaging/components/chat-interface';
@@ -27,6 +28,17 @@ const MessagesPage = () => {
     username: string;
   } | null>(null);
   const [hasTriedRefetch, setHasTriedRefetch] = useState(false);
+  const [optimisticMessages, setOptimisticMessages] = useState<
+    Array<{
+      id: string;
+      content: string;
+      createdAt: string;
+      senderId: string;
+      senderUsername: string;
+      isOptimistic: boolean;
+    }>
+  >([]);
+  const [isSending, setIsSending] = useState(false);
 
   // Get conversations
   const {
@@ -98,6 +110,8 @@ const MessagesPage = () => {
     if (conversation) {
       setSelectedConversationId(conversationId);
       setSelectedOtherUser(conversation.otherUser);
+      // Clear optimistic messages when switching conversations
+      setOptimisticMessages([]);
 
       // Mark messages as read
       try {
@@ -114,21 +128,59 @@ const MessagesPage = () => {
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!selectedConversationId) return;
+    if (!selectedConversationId || !user || isSending) return;
+
+    setIsSending(true);
+
+    // Create optimistic message
+    const optimisticMessage = {
+      id: uuidv4(),
+      content,
+      createdAt: new Date().toISOString(),
+      senderId: user.id,
+      senderUsername: user.username,
+      isOptimistic: true,
+    };
+
+    // Add optimistic message immediately
+    setOptimisticMessages(prev => [...prev, optimisticMessage]);
 
     try {
       const result = await sendMessage(selectedConversationId, content);
       if (result.success) {
-        // Invalidate queries to refresh data
+        // Remove optimistic message and let the real data take over
+        setOptimisticMessages(prev =>
+          prev.filter(msg => msg.id !== optimisticMessage.id)
+        );
+
+        // Optimistically update the messages cache
+        queryClient.setQueryData(
+          ['messages', selectedConversationId, user?.id],
+          (oldData: typeof messages) => {
+            if (!oldData) return oldData;
+            return [...oldData, result.message];
+          }
+        );
+
+        // Invalidate conversations to update last message
         queryClient.invalidateQueries({
           queryKey: ['conversations', user?.id],
         });
-        queryClient.invalidateQueries({
-          queryKey: ['messages', selectedConversationId, user?.id],
-        });
+      } else {
+        // If failed, remove the optimistic message
+        setOptimisticMessages(prev =>
+          prev.filter(msg => msg.id !== optimisticMessage.id)
+        );
+        console.error('Failed to send message:', result.error);
       }
     } catch (error) {
+      // If error, remove the optimistic message
+      setOptimisticMessages(prev =>
+        prev.filter(msg => msg.id !== optimisticMessage.id)
+      );
       console.error('Error sending message:', error);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -182,22 +234,13 @@ const MessagesPage = () => {
   }
 
   return (
-    <div
-      className="h-screen flex flex-col overflow-hidden"
-      style={{ border: '1px solid pink' }}
-    >
+    <div className="h-screen flex flex-col overflow-hidden">
       <div className="container mx-auto px-4 py-6 flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col min-h-0 overflow-hidden">
           <h1 className="text-2xl font-bold mb-6 flex-shrink-0">Messages</h1>
 
-          <Card
-            className="flex-1 overflow-hidden min-h-0 max-h-full"
-            style={{ border: '1px solid yellow' }}
-          >
-            <div
-              className="flex h-full min-h-0 max-h-full"
-              style={{ border: '1px solid red' }}
-            >
+          <Card className="flex-1 overflow-hidden min-h-0 max-h-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-0 rounded-lg shadow-2xl">
+            <div className="flex h-full min-h-0 max-h-full">
               {/* Left Sidebar - Conversation List (30%) */}
               <div className="w-full md:w-[30%] border-r border-gray-200 dark:border-gray-700 h-full min-h-0 overflow-hidden">
                 <ConversationList
@@ -227,16 +270,28 @@ const MessagesPage = () => {
                       : { id: '', username: '' }
                   }
                   otherUser={selectedOtherUser || { id: '', username: '' }}
-                  messages={messages.map(m => ({
-                    id: m.id,
-                    content: m.content,
-                    createdAt: m.createdAt.toISOString(),
-                    senderId: m.senderId,
-                    senderUsername: m.senderUsername,
-                  }))}
+                  messages={[
+                    ...messages.map(m => ({
+                      id: m.id,
+                      content: m.content,
+                      createdAt:
+                        typeof m.createdAt === 'string'
+                          ? m.createdAt
+                          : m.createdAt.toISOString(),
+                      senderId: m.senderId,
+                      senderUsername: m.senderUsername,
+                    })),
+                    ...optimisticMessages.filter(
+                      msg => !msg.isOptimistic || msg.senderId === user?.id
+                    ),
+                  ].sort(
+                    (a, b) =>
+                      new Date(a.createdAt).getTime() -
+                      new Date(b.createdAt).getTime()
+                  )}
                   onSendMessage={handleSendMessage}
                   isLoading={messagesLoading}
-                  isSending={false} // TODO: Add sending state
+                  isSending={isSending}
                 />
               </div>
             </div>

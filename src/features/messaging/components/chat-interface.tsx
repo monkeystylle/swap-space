@@ -1,13 +1,13 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, MessageCircle } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { capitalizeFirstLetter } from '@/utils/text-utils';
+import { getAvatarColor } from '@/utils/avatar-colors';
 
 export interface ChatMessage {
   id: string;
@@ -15,6 +15,7 @@ export interface ChatMessage {
   createdAt: string;
   senderId: string;
   senderUsername: string;
+  isOptimistic?: boolean;
 }
 
 export interface ChatUser {
@@ -57,21 +58,21 @@ export const ChatInterface = ({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive or component mounts
   useEffect(() => {
     if (messagesEndRef.current && scrollAreaRef.current) {
       const scrollElement = scrollAreaRef.current.querySelector(
         '[data-radix-scroll-area-viewport]'
       );
       if (scrollElement) {
-        // Always scroll to bottom for new messages
+        // Always scroll to bottom for new messages (instant)
         messagesEndRef.current.scrollIntoView({
-          behavior: 'smooth',
+          behavior: 'auto',
           block: 'end',
         });
       }
     }
-  }, [messages]);
+  }, [messages, conversationId]); // Also trigger when conversation changes
 
   const handleSendMessage = () => {
     if (messageText.trim() && !isSending) {
@@ -89,24 +90,30 @@ export const ChatInterface = ({
 
   if (!conversationId) {
     return (
-      <Card className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-900">
         <div className="text-center text-gray-500 dark:text-gray-400">
-          <MessageCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+          <div className="w-16 h-16 rounded-full bg-gray-400 flex items-center justify-center mx-auto mb-4">
+            <MessageCircle className="w-8 h-8 text-white" />
+          </div>
           <p className="text-lg font-medium">Select a conversation</p>
           <p className="text-sm">
             Choose a conversation from the left to start messaging
           </p>
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
     <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900 border-0 min-h-0">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+      <div className="h-16 px-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+          <div
+            className={`w-10 h-10 rounded-full ${getAvatarColor(
+              otherUser.username
+            )} flex items-center justify-center text-white font-medium`}
+          >
             {capitalizeFirstLetter(otherUser.username).charAt(0)}
           </div>
           <div>
@@ -172,13 +179,23 @@ export const ChatInterface = ({
                       <div
                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                           isCurrentUser
-                            ? 'bg-blue-500 text-white rounded-br-sm'
+                            ? message.isOptimistic
+                              ? 'bg-blue-400 text-white rounded-br-sm opacity-75'
+                              : 'bg-blue-500 text-white rounded-br-sm'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-sm'
                         }`}
                       >
                         <p className="text-sm whitespace-pre-wrap break-words">
                           {message.content}
                         </p>
+                        {message.isOptimistic && (
+                          <div className="flex items-center mt-1">
+                            <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-1"></div>
+                            <span className="text-xs opacity-75">
+                              Sending...
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

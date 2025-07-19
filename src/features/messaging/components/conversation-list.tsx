@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Archive, User as UserIcon } from 'lucide-react';
 import { capitalizeFirstLetter } from '@/utils/text-utils';
+import { getAvatarColor } from '@/utils/avatar-colors';
 
 export interface ConversationSummary {
   id: string;
@@ -57,10 +58,10 @@ export const ConversationList = ({
 
   return (
     <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900">
-      <div className="p-4 flex-shrink-0">
-        <h3 className="font-semibold mb-4">Conversations</h3>
+      <div className="h-16 px-4 flex items-center flex-shrink-0 border-b border-gray-200 dark:border-gray-700">
+        <h3 className="font-semibold">Conversations</h3>
       </div>
-      <div className="flex-1 px-4 pb-4 min-h-0">
+      <div className="flex-1 p-4 min-h-0">
         <ScrollArea className="h-full">
           <div className="space-y-2">
             {activeConversations.length === 0 ? (
@@ -84,7 +85,11 @@ export const ConversationList = ({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3 min-w-0 flex-1">
-                      <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-sm">
+                      <div
+                        className={`w-10 h-10 rounded-full ${getAvatarColor(
+                          conversation.otherUser.username
+                        )} flex items-center justify-center text-white font-medium text-sm`}
+                      >
                         {capitalizeFirstLetter(
                           conversation.otherUser.username
                         ).charAt(0)}
