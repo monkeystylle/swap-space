@@ -28,6 +28,10 @@ model User {
   sessions     Session[]
   postedItems  PostedItem[] // Add this relationship
   offers       Offer[]      // Add this relationship
+  
+  // Messaging relationships
+  sentMessages       Message[]                @relation("MessageSender")
+  conversationParticipants ConversationParticipant[] @relation("ParticipantUser")
 }
 
 model Session {
@@ -75,5 +79,46 @@ model Offer {
   @@index([postedItemId])
   @@index([userId])
   @@unique([postedItemId, userId]) // Ensure user can only offer once per posted item
+}
+
+// Messaging models
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id           String   @id @default(cuid())
+  joinedAt     DateTime @default(now())
+  lastReadAt   DateTime?
+  archivedAt   DateTime?
+  
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  user           User         @relation("ParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  
+  @@unique([conversationId, userId]) // Ensure user can only participate once per conversation
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String   @db.VarChar(2048)
+  createdAt DateTime @default(now())
+  
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  sender         User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId       String
+  
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
 }
 

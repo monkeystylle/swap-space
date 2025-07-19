@@ -7,6 +7,7 @@ import {
   Info,
   Bell,
   MessageCircle,
+  Mail,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,18 +19,21 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useAuth } from '@/features/auth/hooks/use-auth';
+import { useUnreadCount } from '@/features/messaging/hooks/use-unread-count';
 import {
   homePath,
   signInPath,
   signUpPath,
   usersWallPath,
   disclaimerPath,
+  messagesPath,
 } from '@/paths';
 import { AccountDropdown } from './account-dropdown';
 
 const Navbar = () => {
   const { user, isFetched } = useAuth();
   const pathname = usePathname();
+  const { data: unreadCount = 0 } = useUnreadCount(user?.id);
 
   if (!isFetched) {
     return null;
@@ -122,6 +126,31 @@ const Navbar = () => {
             </TooltipTrigger>
             <TooltipContent>
               <p>My Wall</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip delayDuration={700}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`relative h-12 w-12 rounded-xl ${
+                  isActive(messagesPath())
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                asChild
+              >
+                <Link href={messagesPath()}>
+                  <Mail className="!h-7 !w-7" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full"></span>
+                  )}
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Messages</p>
             </TooltipContent>
           </Tooltip>
 

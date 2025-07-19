@@ -6,6 +6,7 @@
 import { getAuth } from '@/features/auth/queries/get-auth';
 import { CreatePostTrigger } from '@/features/bartering/components/posted-items/create-post-trigger';
 import { PostedItemsList } from '@/features/bartering/components/posted-items/posted-item-list';
+import { MessageUserButton } from '@/features/messaging/components/message-user-button';
 import { prisma } from '@/lib/prisma';
 import { capitalizeFirstLetter } from '@/utils/text-utils';
 
@@ -36,9 +37,18 @@ const WallPage = async ({ params }: WallPageProps) => {
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Page Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {displayName} Wall
-          </h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {displayName} Wall
+            </h1>
+            {/* Message Button - only show for authenticated users viewing other users' walls */}
+            {auth.user && !isOwner && wallOwner && (
+              <MessageUserButton
+                userId={userid}
+                username={wallOwner.username}
+              />
+            )}
+          </div>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             View items posted by this user
           </p>
