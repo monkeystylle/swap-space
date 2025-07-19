@@ -13,6 +13,8 @@ export { sendMessage } from './actions/send-message';
 export { createOrFindConversation } from './actions/create-or-find-conversation';
 export { archiveConversation } from './actions/archive-conversation';
 export { markMessagesAsRead } from './actions/mark-messages-read';
+export { getConversationsAction } from './actions/get-conversations-action';
+export { getMessagesAction } from './actions/get-messages-action';
 
 // Queries
 export { getConversations } from './queries/get-conversations';

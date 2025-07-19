@@ -59,7 +59,7 @@ export const ConversationList = ({
     <Card className="w-full h-full">
       <div className="p-4">
         <h3 className="font-semibold mb-4">Conversations</h3>
-        <ScrollArea className="h-[calc(100vh-200px)]">
+        <ScrollArea className="h-[calc(100%-60px)]">
           <div className="space-y-2">
             {activeConversations.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">

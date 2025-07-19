@@ -57,10 +57,23 @@ export const ChatInterface = ({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive (only if already near bottom)
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current && scrollAreaRef.current) {
+      const scrollElement = scrollAreaRef.current.querySelector(
+        '[data-radix-scroll-area-viewport]'
+      );
+      if (scrollElement) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+
+        if (isNearBottom || messages.length === 1) {
+          messagesEndRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+          });
+        }
+      }
     }
   }, [messages]);
 
@@ -93,9 +106,9 @@ export const ChatInterface = ({
   }
 
   return (
-    <Card className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900 border-0">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
             {capitalizeFirstLetter(otherUser.username).charAt(0)}
@@ -112,75 +125,77 @@ export const ChatInterface = ({
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-        <div className="space-y-4">
-          {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div
-                    className={`flex ${
-                      i % 2 === 0 ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg max-w-xs w-32"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <p className="mb-2">No messages yet</p>
-              <p className="text-sm">
-                Start a conversation with{' '}
-                {capitalizeFirstLetter(otherUser.username)}!
-              </p>
-            </div>
-          ) : (
-            messages.map((message, index) => {
-              const isCurrentUser = message.senderId === currentUser.id;
-              const showTime =
-                index === 0 ||
-                new Date(message.createdAt).getTime() -
-                  new Date(messages[index - 1].createdAt).getTime() >
-                  5 * 60 * 1000; // 5 minutes
-
-              return (
-                <div key={message.id} className="space-y-1">
-                  {showTime && (
-                    <div className="text-center">
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        {formatMessageTime(message.createdAt)}
-                      </span>
-                    </div>
-                  )}
-                  <div
-                    className={`flex ${
-                      isCurrentUser ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
+          <div className="space-y-4">
+            {isLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
                     <div
-                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        isCurrentUser
-                          ? 'bg-blue-500 text-white rounded-br-sm'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-sm'
+                      className={`flex ${
+                        i % 2 === 0 ? 'justify-end' : 'justify-start'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap break-words">
-                        {message.content}
-                      </p>
+                      <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg max-w-xs w-32"></div>
                     </div>
                   </div>
-                </div>
-              );
-            })
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
+                ))}
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <p className="mb-2">No messages yet</p>
+                <p className="text-sm">
+                  Start a conversation with{' '}
+                  {capitalizeFirstLetter(otherUser.username)}!
+                </p>
+              </div>
+            ) : (
+              messages.map((message, index) => {
+                const isCurrentUser = message.senderId === currentUser.id;
+                const showTime =
+                  index === 0 ||
+                  new Date(message.createdAt).getTime() -
+                    new Date(messages[index - 1].createdAt).getTime() >
+                    5 * 60 * 1000; // 5 minutes
+
+                return (
+                  <div key={message.id} className="space-y-1">
+                    {showTime && (
+                      <div className="text-center">
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                          {formatMessageTime(message.createdAt)}
+                        </span>
+                      </div>
+                    )}
+                    <div
+                      className={`flex ${
+                        isCurrentUser ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      <div
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                          isCurrentUser
+                            ? 'bg-blue-500 text-white rounded-br-sm'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-sm'
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap break-words">
+                          {message.content}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+      </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
         <div className="flex space-x-2">
           <Input
             placeholder={`Message ${capitalizeFirstLetter(
@@ -201,6 +216,6 @@ export const ChatInterface = ({
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
