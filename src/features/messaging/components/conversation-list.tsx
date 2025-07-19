@@ -56,10 +56,12 @@ export const ConversationList = ({
   }
 
   return (
-    <Card className="w-full h-full">
-      <div className="p-4">
+    <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900">
+      <div className="p-4 flex-shrink-0">
         <h3 className="font-semibold mb-4">Conversations</h3>
-        <ScrollArea className="h-[calc(100%-60px)]">
+      </div>
+      <div className="flex-1 px-4 pb-4 min-h-0">
+        <ScrollArea className="h-full">
           <div className="space-y-2">
             {activeConversations.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -128,6 +130,6 @@ export const ConversationList = ({
           </div>
         </ScrollArea>
       </div>
-    </Card>
+    </div>
   );
 };

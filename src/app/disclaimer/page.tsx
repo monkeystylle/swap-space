@@ -8,7 +8,7 @@ export default function DisclaimerPage() {
       <div className="space-y-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Disclaimer & Terms of Use
+            Terms of Use
           </h1>
           <p className="text-muted-foreground text-lg">
             Important information about using Swap Space
@@ -113,7 +113,7 @@ export default function DisclaimerPage() {
                 proceed
               </li>
               <li>
-                Reporting suspicious users or activities to our support team
+                Reporting suspicious users or activities to proper authorities
               </li>
               <li>Keeping records of your communications and agreements</li>
             </ul>

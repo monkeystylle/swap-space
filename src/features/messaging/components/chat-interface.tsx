@@ -57,22 +57,18 @@ export const ChatInterface = ({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive (only if already near bottom)
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (messagesEndRef.current && scrollAreaRef.current) {
       const scrollElement = scrollAreaRef.current.querySelector(
         '[data-radix-scroll-area-viewport]'
       );
       if (scrollElement) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-
-        if (isNearBottom || messages.length === 1) {
-          messagesEndRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest',
-          });
-        }
+        // Always scroll to bottom for new messages
+        messagesEndRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
+        });
       }
     }
   }, [messages]);
@@ -106,7 +102,7 @@ export const ChatInterface = ({
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900 border-0">
+    <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900 border-0 min-h-0">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <div className="flex items-center space-x-3">
@@ -125,7 +121,7 @@ export const ChatInterface = ({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden min-h-0">
         <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {isLoading ? (

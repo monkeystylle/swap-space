@@ -182,15 +182,24 @@ const MessagesPage = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="container mx-auto px-4 py-6 flex-1 flex flex-col">
-        <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col">
-          <h1 className="text-2xl font-bold mb-6">Messages</h1>
+    <div
+      className="h-screen flex flex-col overflow-hidden"
+      style={{ border: '1px solid pink' }}
+    >
+      <div className="container mx-auto px-4 py-6 flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+          <h1 className="text-2xl font-bold mb-6 flex-shrink-0">Messages</h1>
 
-          <Card className="flex-1 overflow-hidden">
-            <div className="flex h-full">
+          <Card
+            className="flex-1 overflow-hidden min-h-0 max-h-full"
+            style={{ border: '1px solid yellow' }}
+          >
+            <div
+              className="flex h-full min-h-0 max-h-full"
+              style={{ border: '1px solid red' }}
+            >
               {/* Left Sidebar - Conversation List (30%) */}
-              <div className="w-full md:w-[30%] border-r border-gray-200 dark:border-gray-700 h-full">
+              <div className="w-full md:w-[30%] border-r border-gray-200 dark:border-gray-700 h-full min-h-0 overflow-hidden">
                 <ConversationList
                   conversations={conversations.map(conv => ({
                     ...conv,
@@ -209,7 +218,7 @@ const MessagesPage = () => {
               </div>
 
               {/* Right Side - Chat Interface (70%) */}
-              <div className="hidden md:block md:w-[70%] h-full">
+              <div className="hidden md:block md:w-[70%] h-full min-h-0 overflow-hidden">
                 <ChatInterface
                   conversationId={selectedConversationId}
                   currentUser={
