@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { createOrFindConversation } from '../actions/create-or-find-conversation';
 import { messagesPath } from '@/paths';
 
@@ -17,14 +17,11 @@ export const MessageUserButton = ({
   username,
 }: MessageUserButtonProps) => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleMessageUser = async () => {
-    console.log('🔄 Starting conversation with user:', userId, username);
-    setIsLoading(true);
-
-    try {
-      const result = await createOrFindConversation(userId);
+  const createConversationMutation = useMutation({
+    mutationFn: (targetUserId: string) =>
+      createOrFindConversation(targetUserId),
+    onSuccess: result => {
       console.log('📞 Server action result:', result);
 
       if (result.success && result.conversationId) {
@@ -38,13 +35,17 @@ export const MessageUserButton = ({
         console.log('🔄 Falling back to messages page');
         router.push(messagesPath());
       }
-    } catch (error) {
+    },
+    onError: error => {
       console.error('💥 Error starting conversation:', error);
       console.log('🔄 Fallback: redirecting to messages page');
       router.push(messagesPath());
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const handleMessageUser = () => {
+    console.log('🔄 Starting conversation with user:', userId, username);
+    createConversationMutation.mutate(userId);
   };
 
   return (
@@ -53,14 +54,16 @@ export const MessageUserButton = ({
       variant="outline"
       size="sm"
       className="flex items-center gap-2 cursor-pointer"
-      disabled={isLoading}
+      disabled={createConversationMutation.isPending}
     >
-      {isLoading ? (
+      {createConversationMutation.isPending ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
         <MessageCircle className="w-4 h-4" />
       )}
-      {isLoading ? 'Starting...' : `Message ${username}`}
+      {createConversationMutation.isPending
+        ? 'Starting...'
+        : `Message ${username}`}
     </Button>
   );
 };
