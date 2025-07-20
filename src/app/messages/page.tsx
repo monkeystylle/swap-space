@@ -225,20 +225,40 @@ const MessagesPage = () => {
   // Handle archiving a conversation
   // This will archive the conversation and update the UI accordingly
   const handleArchiveConversation = async (conversationId: string) => {
+    // 1. Optimistic update - immediately remove from UI
+    queryClient.setQueryData(
+      ['conversations', user?.id],
+      (oldData: typeof conversations) => {
+        if (!oldData) return oldData;
+        // Mark conversation as archived optimistically
+        return oldData.map(conv =>
+          conv.id === conversationId ? { ...conv, isArchived: true } : conv
+        );
+      }
+    );
+
+    // 2. Clear selection if this was the selected conversation
+    if (selectedConversationId === conversationId) {
+      setSelectedConversationId('');
+      setSelectedOtherUser(null);
+    }
+
     try {
+      // 3. Send to server
       const result = await archiveConversation(conversationId);
-      if (result.success) {
-        // If this was the selected conversation, clear selection
-        if (selectedConversationId === conversationId) {
-          setSelectedConversationId('');
-          setSelectedOtherUser(null);
-        }
-        // Refresh conversations
+
+      if (!result.success) {
+        // 4. If failed, revert the optimistic update
         queryClient.invalidateQueries({
           queryKey: ['conversations', user?.id],
         });
+        console.error('Failed to archive conversation');
       }
     } catch (error) {
+      // 5. If error, revert the optimistic update
+      queryClient.invalidateQueries({
+        queryKey: ['conversations', user?.id],
+      });
       console.error('Error archiving conversation:', error);
     }
   };
