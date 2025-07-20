@@ -21,13 +21,25 @@ const MessagesPage = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
+  // State to track selected conversation and other user details
+  // This will be set based on URL params or conversation selection
+  // and used to display the chat interface
   const [selectedConversationId, setSelectedConversationId] =
     useState<string>('');
+
+  // State to track the other user in the selected conversation
+  // This will be used to display the chat interface correctly
   const [selectedOtherUser, setSelectedOtherUser] = useState<{
     id: string;
     username: string;
   } | null>(null);
+
+  // State to track if we've tried refetching conversations
+  // when the URL has a conversation ID but no conversations loaded
   const [hasTriedRefetch, setHasTriedRefetch] = useState(false);
+
+  // Optimistic messages state
+  // This will hold messages that are sent but not yet confirmed by the server
   const [optimisticMessages, setOptimisticMessages] = useState<
     Array<{
       id: string;
@@ -38,30 +50,42 @@ const MessagesPage = () => {
       isOptimistic: boolean;
     }>
   >([]);
+
+  // State to track if a message is currently being sent
+  // This will prevent multiple sends at the same time
   const [isSending, setIsSending] = useState(false);
 
-  // Get conversations
+  // Fetch conversations for the current user
+  // This will be used to populate the conversation list
   const {
     data: conversations = [],
     isLoading: conversationsLoading,
     refetch: refetchConversations,
   } = useConversations(user?.id);
 
-  // Get messages for selected conversation
+  // Fetch messages for the selected conversation
+  // This will be used to display the chat messages in the interface
   const { data: messages = [], isLoading: messagesLoading } = useMessages(
     selectedConversationId,
     user?.id
   );
 
-  // Handle conversation selection from URL params
+  // Effect to handle URL changes and set selected conversation
+  // This will run whenever the search params change
+  // and will update the selected conversation based on the URL
   useEffect(() => {
     const conversationId = searchParams.get('conversation');
     console.log('🔍 URL conversation parameter:', conversationId);
     console.log('📋 Available conversations:', conversations.length);
 
-    // Reset refetch state when URL changes
+    // Reset state when search params change
+    // This ensures we don't keep stale state
     setHasTriedRefetch(false);
 
+    // If a conversation ID is present in the URL, find it in the conversations list
+    // and set it as the selected conversation
+    // Also set the other user based on the conversation details
+    // This will ensure the chat interface displays the correct conversation
     if (conversationId && conversations.length > 0) {
       const conversation = conversations.find(c => c.id === conversationId);
       console.log('🎯 Found conversation:', conversation);
@@ -76,8 +100,10 @@ const MessagesPage = () => {
     }
   }, [searchParams, conversations]);
 
-  // Separate effect to handle refetching when conversation ID exists but no conversations loaded
-  // Only try once to prevent infinite loops
+  // Effect to handle case where conversation ID is in URL but no conversations loaded
+  // This will refetch conversations once if we haven't tried it yet
+  // This ensures we can still load the conversation if it exists
+  // This is useful for cases where the user navigates directly to a conversation URL
   useEffect(() => {
     const conversationId = searchParams.get('conversation');
 
@@ -105,6 +131,9 @@ const MessagesPage = () => {
     hasTriedRefetch,
   ]);
 
+  // Handle conversation selection and message sending
+  // This will update the selected conversation and mark messages as read
+  // It will also handle sending messages and optimistic updates
   const handleConversationSelect = async (conversationId: string) => {
     const conversation = conversations.find(c => c.id === conversationId);
     if (conversation) {
@@ -127,6 +156,10 @@ const MessagesPage = () => {
     }
   };
 
+  // Handle sending a message
+  // This will create an optimistic message immediately
+  // and then send it to the server
+  // If successful, it will update the messages cache
   const handleSendMessage = async (content: string) => {
     if (!selectedConversationId || !user || isSending) return;
 
@@ -184,6 +217,8 @@ const MessagesPage = () => {
     }
   };
 
+  // Handle archiving a conversation
+  // This will archive the conversation and update the UI accordingly
   const handleArchiveConversation = async (conversationId: string) => {
     try {
       const result = await archiveConversation(conversationId);
@@ -203,7 +238,8 @@ const MessagesPage = () => {
     }
   };
 
-  // Handle authentication
+  // Effect to redirect to sign-in if user is not authenticated
+  // This will check if the user is fetched and redirect to sign-in if not
   useEffect(() => {
     if (isFetched && !user) {
       router.push(signInPath());
