@@ -111,6 +111,7 @@ export const createOrFindConversation = async (otherUserId: string) => {
       return {
         success: true,
         conversationId: existingParticipation.conversation.id,
+        conversation: existingParticipation.conversation,
         otherUser,
       };
     }
@@ -148,6 +149,7 @@ export const createOrFindConversation = async (otherUserId: string) => {
     return {
       success: true,
       conversationId: conversation.id,
+      conversation: conversation,
       otherUser,
     };
   } catch (error) {

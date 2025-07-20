@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createOrFindConversation } from '../actions/create-or-find-conversation';
 import { messagesPath } from '@/paths';
+import { useAuth } from '@/features/auth/hooks/use-auth';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface MessageUserButtonProps {
   userId: string;
@@ -17,6 +19,8 @@ export const MessageUserButton = ({
   username,
 }: MessageUserButtonProps) => {
   const router = useRouter();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const createConversationMutation = useMutation({
     mutationFn: (targetUserId: string) =>
@@ -25,6 +29,40 @@ export const MessageUserButton = ({
       console.log('📞 Server action result:', result);
 
       if (result.success && result.conversationId) {
+        // Optimistic update - add/unarchive conversation immediately
+        if (result.conversation && user?.id) {
+          queryClient.setQueryData(
+            ['conversations', user.id],
+            (oldData: unknown) => {
+              if (!oldData) return [result.conversation];
+
+              // Type guard to ensure oldData is an array
+              if (!Array.isArray(oldData)) return [result.conversation];
+
+              // Check if conversation already exists
+              const existingIndex = oldData.findIndex(
+                (conv: unknown) =>
+                  typeof conv === 'object' &&
+                  conv !== null &&
+                  'id' in conv &&
+                  (conv as { id: string }).id === result.conversationId
+              );
+
+              if (existingIndex >= 0) {
+                // Unarchive existing conversation
+                return oldData.map((conv, index) =>
+                  index === existingIndex
+                    ? { ...(conv as object), isArchived: false }
+                    : conv
+                );
+              } else {
+                // Add new conversation
+                return [result.conversation, ...oldData];
+              }
+            }
+          );
+        }
+
         const redirectUrl = `${messagesPath()}?conversation=${
           result.conversationId
         }`;
@@ -32,7 +70,6 @@ export const MessageUserButton = ({
         router.push(redirectUrl);
       } else {
         console.error('❌ Failed to create/find conversation:', result.error);
-        console.log('🔄 Falling back to messages page');
         router.push(messagesPath());
       }
     },
