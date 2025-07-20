@@ -73,6 +73,7 @@ const MessagesPage = () => {
   // Effect to handle URL changes and set selected conversation
   // This will run whenever the search params change
   // and will update the selected conversation based on the URL
+
   useEffect(() => {
     const conversationId = searchParams.get('conversation');
     console.log('🔍 URL conversation parameter:', conversationId);
@@ -86,7 +87,7 @@ const MessagesPage = () => {
     // and set it as the selected conversation
     // Also set the other user based on the conversation details
     // This will ensure the chat interface displays the correct conversation
-    if (conversationId && conversations.length > 0) {
+    if (conversationId && conversations.length > 0 && !selectedConversationId) {
       const conversation = conversations.find(c => c.id === conversationId);
       console.log('🎯 Found conversation:', conversation);
 
@@ -98,6 +99,7 @@ const MessagesPage = () => {
         console.log('❌ Conversation not found in available conversations');
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, conversations]);
 
   // Effect to handle case where conversation ID is in URL but no conversations loaded
@@ -141,6 +143,9 @@ const MessagesPage = () => {
       setSelectedOtherUser(conversation.otherUser);
       // Clear optimistic messages when switching conversations
       setOptimisticMessages([]);
+
+      // Redirect to messages page with selected conversation
+      router.replace('/messages');
 
       // Mark messages as read
       try {
