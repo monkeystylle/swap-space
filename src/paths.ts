@@ -21,5 +21,8 @@ export const postedItemEditPath = (postedItemId: string) =>
 
 export const usersWallPath = (userId: string) => `/wall/${userId}`;
 
+// Messages path
+export const messagesPath = () => '/messages';
+
 // Disclaimer path
 export const disclaimerPath = () => '/disclaimer';
