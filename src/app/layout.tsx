@@ -38,10 +38,7 @@ export default function RootLayout({
           <ThemeProvider>
             <ReactQueryProvider>
               <Navbar />
-              <div
-                className="flex h-screen overflow-hidden "
-                style={{ border: '1px solid red' }}
-              >
+              <div className="flex h-screen overflow-hidden ">
                 <main
                   className="
                 min-h-screen flex-1
@@ -51,7 +48,6 @@ export default function RootLayout({
                 flex flex-col
                 
               "
-                  style={{ border: '1px solid yellow' }}
                 >
                   {children}
                 </main>

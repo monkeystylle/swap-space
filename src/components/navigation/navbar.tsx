@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  LucideKanban,
-  Home,
-  User,
-  Info,
-  Bell,
-  MessageCircle,
-  Mail,
-} from 'lucide-react';
+import { LucideKanban, Home, User, Info, Bell, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeSwitcher } from '@/components/theme/theme-switcher';
@@ -200,7 +192,7 @@ const Navbar = () => {
               </TooltipContent>
             </Tooltip>
 
-            <Tooltip delayDuration={700}>
+            {/* <Tooltip delayDuration={700}>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
@@ -213,7 +205,7 @@ const Navbar = () => {
               <TooltipContent>
                 <p>Messages</p>
               </TooltipContent>
-            </Tooltip>
+            </Tooltip> */}
           </>
         )}
 
