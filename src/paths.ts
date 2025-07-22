@@ -26,3 +26,5 @@ export const messagesPath = () => '/messages';
 
 // Disclaimer path
 export const disclaimerPath = () => '/disclaimer';
+
+export const itemPath = (itemId: string) => `/item/${itemId}`;

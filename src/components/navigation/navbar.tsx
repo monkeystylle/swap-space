@@ -1,6 +1,6 @@
 'use client';
 
-import { LucideKanban, Home, User, Info, Bell, Mail } from 'lucide-react';
+import { LucideKanban, Home, User, Info, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeSwitcher } from '@/components/theme/theme-switcher';
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useAuth } from '@/features/auth/hooks/use-auth';
 import { useUnreadCount } from '@/features/messaging/hooks/use-unread-count';
+import { NotificationDropdown } from '@/features/notification/components/notification-dropdown';
 import {
   homePath,
   signInPath,
@@ -174,23 +175,10 @@ const Navbar = () => {
       <div className="flex gap-x-2 items-center">
         <ThemeSwitcher />
 
-        {/* Notification and Message icons (only show when logged in) */}
+        {/* Notification icon (only show when logged in) */}
         {user && (
           <>
-            <Tooltip delayDuration={700}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-12 w-12 rounded-full bg-muted/50 hover:bg-muted"
-                >
-                  <Bell className="!h-5 !w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Notifications</p>
-              </TooltipContent>
-            </Tooltip>
+            <NotificationDropdown userId={user.id} />
 
             {/* <Tooltip delayDuration={700}>
               <TooltipTrigger asChild>
