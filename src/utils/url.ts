@@ -4,7 +4,7 @@ export const getBaseUrl = () => {
   const baseUrl =
     environment === 'development'
       ? 'http://localhost:3000'
-      : 'https://swap-space-ten.vercel.app';
+      : 'https://www.swap-space-app.com/';
 
   return baseUrl;
 };
