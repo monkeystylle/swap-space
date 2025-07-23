@@ -18,6 +18,7 @@ import {
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect';
 import { createNotification } from '@/features/notification/actions/create-notification';
 import { sendOfferNotificationEmail } from '@/features/notification/services/send-offer-notification-email';
+import { getBaseUrl } from '@/utils/url';
 
 // Define validation schema for offer content
 const createOfferSchema = z.object({
@@ -166,7 +167,7 @@ export const createOffer = async (
         createdOffer.user?.username || 'Someone',
         postedItem.title,
         content,
-        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/item/${postedItemId}`
+        `${getBaseUrl()}/item/${postedItemId}`
       );
     } catch (emailError) {
       console.error('Failed to send email notification:', emailError);

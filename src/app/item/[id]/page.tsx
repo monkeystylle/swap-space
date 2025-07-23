@@ -4,18 +4,21 @@ import { PostedItemCard } from '@/features/bartering/components/posted-items/pos
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect';
 
 interface ItemPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const ItemPage = async ({ params }: ItemPageProps) => {
+  // Await params in Next.js 15
+  const { id } = await params;
+
   // Get current authenticated user
   const { user } = await getAuthOrRedirect();
 
   const postedItem = await prisma.postedItem.findUnique({
     where: {
-      id: params.id,
+      id: id,
     },
     include: {
       user: {
