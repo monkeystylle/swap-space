@@ -34,18 +34,29 @@ const OfferNotificationEmail = ({
             {/* Header */}
             <Section className="bg-emerald-600 px-8 py-6">
               <Container className="text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Img
-                    src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNiAzaDJhMiAyIDAgMCAxIDIgMnYxNGEyIDIgMCAwIDEtMiAySDZhMiAyIDAgMCAxLTItMlY1YTIgMiAwIDAgMSAyLTJ6IiBmaWxsPSIjZmZmZmZmIi8+CiAgPHBhdGggZD0iTTE2IDNoMmEyIDIgMCAwIDEgMiAydjEwYTIgMiAwIDAgMS0yIDJoLTJhMiAyIDAgMCAxLTItMlY1YTIgMiAwIDAgMSAyLTJ6IiBmaWxsPSIjZmZmZmZmIi8+Cjwvc3ZnPgo="
-                    alt="Swap Space Logo"
-                    width="32"
-                    height="32"
-                    className="mr-3"
-                  />
-                  <Text className="text-3xl font-bold text-white m-0">
-                    Swap Space
-                  </Text>
-                </div>
+                {/* Use table for proper alignment in emails */}
+                <table style={{ margin: '0 auto', marginBottom: '8px' }}>
+                  <tr>
+                    <td
+                      style={{ verticalAlign: 'middle', paddingRight: '12px' }}
+                    >
+                      <Img
+                        src="https://res.cloudinary.com/depjz6qgl/image/upload/f_png/v1753344926/kanban-white_wewsia.svg"
+                        alt="Swap Space Logo"
+                        width="32"
+                        height="32"
+                      />
+                    </td>
+                    <td style={{ verticalAlign: 'middle' }}>
+                      <Text
+                        className="text-3xl font-bold text-white m-0"
+                        style={{ margin: 0, lineHeight: '1' }}
+                      >
+                        Swap Space
+                      </Text>
+                    </td>
+                  </tr>
+                </table>
                 <Text className="text-emerald-100 text-sm m-0">
                   Your barterplace for items and services
                 </Text>
