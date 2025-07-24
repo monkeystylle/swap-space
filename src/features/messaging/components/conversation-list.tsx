@@ -8,6 +8,10 @@ import { Archive, User as UserIcon } from 'lucide-react';
 import { capitalizeFirstLetter } from '@/utils/text-utils';
 import { getAvatarColor } from '@/utils/avatar-colors';
 
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/features/auth/hooks/use-auth';
+import { getMessagesAction } from '../actions/get-messages-action';
+
 export interface ConversationSummary {
   id: string;
   otherUser: {
@@ -37,7 +41,25 @@ export const ConversationList = ({
   onArchiveConversation,
   isLoading,
 }: ConversationListProps) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
   const activeConversations = conversations.filter(conv => !conv.isArchived);
+
+  // Prefetch messages on hover
+  const handleConversationHover = (conversationId: string) => {
+    queryClient.prefetchQuery({
+      queryKey: ['messages', conversationId, user?.id],
+      queryFn: async () => {
+        const result = await getMessagesAction(conversationId);
+        if (result.error) {
+          throw new Error(result.error);
+        }
+        return result.messages || [];
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    });
+  };
 
   if (isLoading) {
     return (
@@ -82,7 +104,9 @@ export const ConversationList = ({
                       : 'border-gray-200 dark:border-gray-700'
                   }`}
                   onClick={() => onConversationSelect(conversation.id)}
+                  onMouseEnter={() => handleConversationHover(conversation.id)} // Add this line
                 >
+                  {/* All your existing conversation item JSX stays exactly the same */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3 min-w-0 flex-1">
                       <div

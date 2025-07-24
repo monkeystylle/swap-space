@@ -24,8 +24,10 @@ export const useMessages = (conversationId?: string, userId?: string) => {
       return result.messages || [];
     },
     enabled: !!conversationId && !!userId,
-    staleTime: 1000 * 30, // 30 seconds
-    refetchInterval: 1000 * 30, // 30 seconds for real-time feel
+    staleTime: 2 * 60 * 1000, // 2 minutes (was 30 seconds)
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchInterval: 1000 * 30, // Keep your 30 seconds for real-time feel
   });
 };
 
