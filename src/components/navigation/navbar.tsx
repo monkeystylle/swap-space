@@ -179,21 +179,6 @@ const Navbar = () => {
         {user && (
           <>
             <NotificationDropdown userId={user.id} />
-
-            {/* <Tooltip delayDuration={700}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-12 w-12 rounded-full bg-muted/50 hover:bg-muted"
-                >
-                  <MessageCircle className="!h-5 !w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Messages</p>
-              </TooltipContent>
-            </Tooltip> */}
           </>
         )}
 
