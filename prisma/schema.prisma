@@ -32,6 +32,7 @@ model User {
   // Messaging relationships
   sentMessages       Message[]                @relation("MessageSender")
   conversationParticipants ConversationParticipant[] @relation("ParticipantUser")
+  notifications      Notification[]           @relation("UserNotifications")
 }
 
 model Session {
@@ -58,6 +59,7 @@ model PostedItem {
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   offers      Offer[]
+  notifications Notification[]
 
   @@index([userId])
 }
@@ -75,6 +77,7 @@ model Offer {
   postedItemId String
   user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId       String?
+  notifications Notification[]
 
   @@index([postedItemId])
   @@index([userId])
@@ -119,6 +122,32 @@ model Message {
   
   @@index([conversationId])
   @@index([senderId])
+  @@index([createdAt])
+}
+
+// Notification model for in-app notifications
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // e.g., 'OFFER_RECEIVED'
+  title     String
+  message   String   @db.VarChar(500)
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  // Link to the item that triggered the notification
+  postedItemId String?
+  postedItem   PostedItem? @relation(fields: [postedItemId], references: [id], onDelete: Cascade)
+  
+  // User who receives the notification
+  userId    String
+  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Optional link to the offer that triggered the notification
+  offerId   String?
+  offer     Offer?   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isRead])
   @@index([createdAt])
 }
 

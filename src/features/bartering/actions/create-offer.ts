@@ -16,6 +16,9 @@ import {
 } from '@/utils/to-action-state';
 
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect';
+import { createNotification } from '@/features/notification/actions/create-notification';
+import { sendOfferNotificationEmail } from '@/features/notification/services/send-offer-notification-email';
+import { getBaseUrl } from '@/utils/url';
 
 // Define validation schema for offer content
 const createOfferSchema = z.object({
@@ -51,7 +54,13 @@ export const createOffer = async (
     const postedItem = await prisma.postedItem.findUnique({
       where: { id: postedItemId },
       include: {
-        user: { select: { id: true } }, // Include owner info
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        }, // Include owner info for notifications
       },
     });
 
@@ -138,9 +147,47 @@ export const createOffer = async (
     }
 
     // Create the offer in database
-    await prisma.offer.create({
+    const createdOffer = await prisma.offer.create({
       data: offerData,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
     });
+
+    // Send email notification to posted item owner
+    try {
+      await sendOfferNotificationEmail(
+        postedItem.user.username || 'User',
+        postedItem.user.email,
+        createdOffer.user?.username || 'Someone',
+        postedItem.title,
+        content,
+        `${getBaseUrl()}/item/${postedItemId}`
+      );
+    } catch (emailError) {
+      console.error('Failed to send email notification:', emailError);
+      // Don't fail the offer creation if email fails
+    }
+
+    // Create in-app notification for posted item owner
+    try {
+      await createNotification({
+        type: 'OFFER_RECEIVED',
+        title: 'New offer on your item!',
+        message: `${createdOffer.user?.username || 'Someone'} made an offer on "${postedItem.title}": "${content}"`,
+        userId: postedItem.user.id,
+        postedItemId: postedItemId,
+        offerId: createdOffer.id,
+      });
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+      // Don't fail the offer creation if notification fails
+    }
 
     return toActionState('SUCCESS', 'Offer created successfully');
   } catch (error) {
