@@ -26,8 +26,8 @@ export const useMessages = (conversationId?: string, userId?: string) => {
     enabled: !!conversationId && !!userId,
     staleTime: 2 * 60 * 1000, // 2 minutes (was 30 seconds)
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
-    refetchOnWindowFocus: false, // Don't refetch on window focus
-    refetchInterval: 1000 * 30, // Keep your 30 seconds for real-time feel
+    refetchOnWindowFocus: false, // Don't refetch when switching tabs
+    refetchInterval: 3000, // 🎯 Change from 30000 to 3000 (3 seconds)
   });
 };
 
