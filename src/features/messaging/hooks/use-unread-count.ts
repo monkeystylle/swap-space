@@ -8,7 +8,7 @@ export const useUnreadCount = (userId?: string) => {
     queryKey: ['unreadCount', userId],
     queryFn: () => getUnreadMessageCount(userId!),
     enabled: !!userId,
-    staleTime: 1000 * 30, // 30 seconds
-    refetchInterval: 1000 * 60, // 1 minute
+    staleTime: 1000 * 10, // 10 seconds (was 30)
+    refetchInterval: 1000 * 15, // 15 seconds (was 60)
   });
 };

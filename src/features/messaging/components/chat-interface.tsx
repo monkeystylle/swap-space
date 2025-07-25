@@ -9,6 +9,9 @@ import { format, isToday, isYesterday } from 'date-fns';
 import { capitalizeFirstLetter } from '@/utils/text-utils';
 import { getAvatarColor } from '@/utils/avatar-colors';
 
+import { useQueryClient } from '@tanstack/react-query';
+import { markMessagesAsRead } from '../actions/mark-messages-read';
+
 export interface ChatMessage {
   id: string;
   content: string;
@@ -57,6 +60,7 @@ export const ChatInterface = ({
   const [messageText, setMessageText] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   // Auto-scroll to bottom when new messages arrive or component mounts
   useEffect(() => {
@@ -74,10 +78,82 @@ export const ChatInterface = ({
     }
   }, [messages, conversationId]); // Also trigger when conversation changes
 
+  //  mark messages as read when conversation opens
+  useEffect(() => {
+    if (conversationId && currentUser?.id) {
+      console.log(
+        '🔵 Marking messages as read for conversation:',
+        conversationId
+      );
+
+      markMessagesAsRead(conversationId).then(result => {
+        if (result.success) {
+          console.log('✅ Messages marked as read, updating caches...');
+
+          // Immediately update the unread count cache
+          queryClient.invalidateQueries({
+            queryKey: ['unreadCount', currentUser.id],
+          });
+
+          // Also update conversations cache to remove badge
+          queryClient.invalidateQueries({
+            queryKey: ['conversations', currentUser.id],
+          });
+        }
+      });
+    }
+  }, [conversationId, currentUser?.id, queryClient]);
+
+  // 🎯 Auto-mark as read when new messages arrive
+  useEffect(() => {
+    if (conversationId && currentUser?.id && messages.length > 0) {
+      // Get the latest message
+      const latestMessage = messages[messages.length - 1];
+
+      // If the latest message is from the other user (not from current user)
+      if (
+        latestMessage &&
+        latestMessage.senderId !== currentUser.id &&
+        !latestMessage.isOptimistic
+      ) {
+        console.log(
+          '🔵 New message received while chat is open, marking as read...'
+        );
+
+        // Small delay to ensure the message is fully processed
+        setTimeout(() => {
+          markMessagesAsRead(conversationId).then(result => {
+            if (result.success) {
+              console.log('✅ Auto-marked new message as read');
+
+              queryClient.invalidateQueries({
+                queryKey: ['unreadCount', currentUser.id],
+              });
+
+              queryClient.invalidateQueries({
+                queryKey: ['conversations', currentUser.id],
+              });
+            }
+          });
+        }, 100);
+      }
+    }
+  }, [messages, conversationId, currentUser?.id, queryClient]); // 🎯 ADD THIS ENTIRE EFFECT
+
   const handleSendMessage = () => {
     if (messageText.trim() && !isSending) {
       onSendMessage(messageText.trim());
       setMessageText('');
+
+      // Update caches after sending a message
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ['unreadCount', currentUser.id],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['conversations', currentUser.id],
+        });
+      }, 500); // Small delay to ensure message is sent
     }
   };
 
