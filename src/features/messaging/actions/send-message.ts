@@ -13,54 +13,45 @@ export const sendMessage = async (conversationId: string, content: string) => {
   }
 
   try {
-    // Verify user is a participant in this conversation
-    const participation = await prisma.conversationParticipant.findFirst({
-      where: {
-        conversationId,
-        userId: auth.user.id,
-      },
-    });
-
-    if (!participation) {
-      return {
-        error: 'You are not a participant in this conversation',
-      };
-    }
-
-    // Create the message
-    const message = await prisma.message.create({
-      data: {
-        content: content.trim(),
-        conversationId,
-        senderId: auth.user.id,
-      },
-      include: {
-        sender: {
-          select: {
-            username: true,
+    // Use a transaction to create message and update conversation timestamp in one go
+    const result = await prisma.$transaction(async tx => {
+      // Create the message
+      const message = await tx.message.create({
+        data: {
+          content: content.trim(),
+          conversationId,
+          senderId: auth.user.id,
+        },
+        include: {
+          sender: {
+            select: {
+              username: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    // Update conversation timestamp
-    await prisma.conversation.update({
-      where: {
-        id: conversationId,
-      },
-      data: {
-        updatedAt: new Date(),
-      },
+      // Update conversation timestamp
+      await tx.conversation.update({
+        where: {
+          id: conversationId,
+        },
+        data: {
+          updatedAt: new Date(),
+        },
+      });
+
+      return message;
     });
 
     return {
       success: true,
       message: {
-        id: message.id,
-        content: message.content,
-        createdAt: message.createdAt.toISOString(),
-        senderId: message.senderId,
-        senderUsername: message.sender.username,
+        id: result.id,
+        content: result.content,
+        createdAt: result.createdAt.toISOString(),
+        senderId: result.senderId,
+        senderUsername: result.sender.username,
       },
     };
   } catch (error) {

@@ -166,13 +166,15 @@ export function MessagesPageContent() {
   // and then send it to the server
   // If successful, it will update the messages cache
   const handleSendMessage = async (content: string) => {
-    if (!selectedConversationId || !user || isSending) return;
+    if (!selectedConversationId || !user) return;
 
-    setIsSending(true);
+    // Don't prevent sending if already sending - allow multiple optimistic messages
+    // but track each one individually
+    const messageId = uuidv4();
 
-    // Create optimistic message
+    // Create optimistic message FIRST - before any async operations
     const optimisticMessage = {
-      id: uuidv4(),
+      id: messageId,
       content,
       createdAt: new Date().toISOString(),
       senderId: user.id,
@@ -180,22 +182,23 @@ export function MessagesPageContent() {
       isOptimistic: true,
     };
 
-    // Add optimistic message immediately
+    // Add optimistic message immediately - this should show instantly
     setOptimisticMessages(prev => [...prev, optimisticMessage]);
+
+    // Set sending state after optimistic update for better perceived performance
+    setIsSending(true);
 
     try {
       const result = await sendMessage(selectedConversationId, content);
       if (result.success) {
         // Remove optimistic message and let the real data take over
-        setOptimisticMessages(prev =>
-          prev.filter(msg => msg.id !== optimisticMessage.id)
-        );
+        setOptimisticMessages(prev => prev.filter(msg => msg.id !== messageId));
 
-        // Optimistically update the messages cache
+        // Optimistically update the messages cache with real message
         queryClient.setQueryData(
           ['messages', selectedConversationId, user?.id],
           (oldData: typeof messages) => {
-            if (!oldData) return oldData;
+            if (!oldData) return [result.message];
             return [...oldData, result.message];
           }
         );
@@ -206,16 +209,12 @@ export function MessagesPageContent() {
         });
       } else {
         // If failed, remove the optimistic message
-        setOptimisticMessages(prev =>
-          prev.filter(msg => msg.id !== optimisticMessage.id)
-        );
+        setOptimisticMessages(prev => prev.filter(msg => msg.id !== messageId));
         console.error('Failed to send message:', result.error);
       }
     } catch (error) {
       // If error, remove the optimistic message
-      setOptimisticMessages(prev =>
-        prev.filter(msg => msg.id !== optimisticMessage.id)
-      );
+      setOptimisticMessages(prev => prev.filter(msg => msg.id !== messageId));
       console.error('Error sending message:', error);
     } finally {
       setIsSending(false);
