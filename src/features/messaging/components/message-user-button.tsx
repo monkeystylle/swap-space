@@ -31,13 +31,27 @@ export const MessageUserButton = ({
       if (result.success && result.conversationId) {
         // Optimistic update - add/unarchive conversation immediately
         if (result.conversation && user?.id) {
+          // Transform the raw conversation data to match ConversationWithDetails structure
+          const otherParticipant = result.conversation.participants.find(
+            p => p.user.id !== user.id
+          );
+
+          const transformedConversation = {
+            id: result.conversation.id,
+            otherUser: otherParticipant?.user || { id: userId, username },
+            lastMessage: undefined, // New conversations don't have messages yet
+            unreadCount: 0, // New conversations start with 0 unread
+            isArchived: false, // New/unarchived conversations
+            updatedAt: new Date(), // Current time for new conversations
+          };
+
           queryClient.setQueryData(
             ['conversations', user.id],
             (oldData: unknown) => {
-              if (!oldData) return [result.conversation];
+              if (!oldData) return [transformedConversation];
 
               // Type guard to ensure oldData is an array
-              if (!Array.isArray(oldData)) return [result.conversation];
+              if (!Array.isArray(oldData)) return [transformedConversation];
 
               // Check if conversation already exists
               const existingIndex = oldData.findIndex(
@@ -57,7 +71,7 @@ export const MessageUserButton = ({
                 );
               } else {
                 // Add new conversation
-                return [result.conversation, ...oldData];
+                return [transformedConversation, ...oldData];
               }
             }
           );
