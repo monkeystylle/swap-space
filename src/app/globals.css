@@ -125,8 +125,7 @@
   }
 }
 
-@utility custom-container {
-  width: 100%;
+@utility container {
   margin: 0 auto;
   padding: 0 0.75rem; /* 12px on mobile */
 
