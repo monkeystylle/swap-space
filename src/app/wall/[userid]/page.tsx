@@ -32,7 +32,7 @@ const WallPage = async ({ params }: WallPageProps) => {
   const displayName = capitalizeFirstLetter(wallOwner?.username);
 
   return (
-    <div className="container ">
+    <div className="container-custom">
       {/* Main Container */}
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Page Header */}
