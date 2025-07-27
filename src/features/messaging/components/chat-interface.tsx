@@ -180,9 +180,9 @@ export const ChatInterface = ({
                       <div
                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                           isCurrentUser
-                            ? message.isOptimistic || message.isSending
-                              ? 'bg-blue-400 text-white rounded-br-sm opacity-75'
-                              : 'bg-blue-500 text-white rounded-br-sm'
+                            ? message.isSending
+                              ? 'bg-blue-400 text-white rounded-br-sm opacity-75' // Only "Sending..." stage gets lighter style
+                              : 'bg-blue-500 text-white rounded-br-sm' // Both optimistic and real messages get normal style
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-sm'
                         }`}
                       >
