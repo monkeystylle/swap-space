@@ -16,6 +16,7 @@ export interface ChatMessage {
   senderId: string;
   senderUsername: string;
   isOptimistic?: boolean;
+  isSending?: boolean; // New flag for "Sending..." stage
 }
 
 export interface ChatUser {
@@ -179,22 +180,25 @@ export const ChatInterface = ({
                       <div
                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                           isCurrentUser
-                            ? message.isOptimistic
+                            ? message.isOptimistic || message.isSending
                               ? 'bg-blue-400 text-white rounded-br-sm opacity-75'
                               : 'bg-blue-500 text-white rounded-br-sm'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-sm'
                         }`}
                       >
-                        <p className="text-sm whitespace-pre-wrap break-words">
-                          {message.content}
-                        </p>
-                        {message.isOptimistic && (
-                          <div className="flex items-center mt-1">
-                            <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-1"></div>
-                            <span className="text-xs opacity-75">
+                        {message.isSending ? (
+                          // Stage 1: Show only "Sending..." indicator
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-2"></div>
+                            <span className="text-sm opacity-75">
                               Sending...
                             </span>
                           </div>
+                        ) : (
+                          // Stage 2: Show actual message content
+                          <p className="text-sm whitespace-pre-wrap break-words">
+                            {message.content}
+                          </p>
                         )}
                       </div>
                     </div>

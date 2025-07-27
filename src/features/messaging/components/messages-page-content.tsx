@@ -70,14 +70,15 @@ export function MessagesPageContent() {
         user?.id,
       ]);
 
-      // Create optimistic message
+      // Create optimistic message - Stage 1: Show only "Sending..."
       const optimisticMessage = {
         id: uuidv4(),
-        content: content.trim(),
+        content: content.trim(), // Store the actual content but won't show initially
         createdAt: new Date().toISOString(),
         senderId: user!.id,
         senderUsername: user!.username,
         isOptimistic: true, // Mark as optimistic
+        isSending: true, // New flag for "Sending..." stage
       };
 
       // Optimistically update the messages cache
@@ -89,11 +90,31 @@ export function MessagesPageContent() {
         }
       );
 
-      // Return context for rollback
-      return { previousMessages, optimisticMessage };
+      // Stage 2: After 1 second, show the actual message content
+      const timeoutId = setTimeout(() => {
+        queryClient.setQueryData(
+          ['messages', conversationId, user?.id],
+          (oldData: typeof messages) => {
+            if (!oldData) return oldData;
+            return oldData.map(msg =>
+              msg.id === optimisticMessage.id
+                ? { ...msg, isSending: false } // Remove sending flag, keep isOptimistic
+                : msg
+            );
+          }
+        );
+      }, 1000);
+
+      // Return context for rollback and cleanup
+      return { previousMessages, optimisticMessage, timeoutId };
     },
 
     onError: (error, { conversationId }, context) => {
+      // Clear timeout if it exists
+      if (context?.timeoutId) {
+        clearTimeout(context.timeoutId);
+      }
+
       // If the mutation fails, rollback to previous data
       if (context?.previousMessages) {
         queryClient.setQueryData(
@@ -105,6 +126,11 @@ export function MessagesPageContent() {
     },
 
     onSuccess: (result, { conversationId }, context) => {
+      // Clear timeout since we're handling the success
+      if (context?.timeoutId) {
+        clearTimeout(context.timeoutId);
+      }
+
       if (result.success) {
         // Replace optimistic message with real message
         queryClient.setQueryData(
@@ -340,6 +366,7 @@ export function MessagesPageContent() {
                       senderId: m.senderId,
                       senderUsername: m.senderUsername,
                       isOptimistic: m.isOptimistic || false,
+                      isSending: m.isSending || false, // Include the new isSending flag
                     }))
                     .sort(
                       (a, b) =>

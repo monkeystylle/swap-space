@@ -7,6 +7,7 @@ export interface MessageWithSender {
   senderId: string;
   senderUsername: string;
   isOptimistic?: boolean; // For optimistic updates
+  isSending?: boolean; // For "Sending..." stage of optimistic updates
 }
 
 export const getMessages = async (
