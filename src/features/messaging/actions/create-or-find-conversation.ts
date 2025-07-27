@@ -57,6 +57,7 @@ export const createOrFindConversation = async (otherUserId: string) => {
       'and',
       otherUserId
     );
+
     const existingParticipation =
       await prisma.conversationParticipant.findFirst({
         where: {
@@ -87,12 +88,8 @@ export const createOrFindConversation = async (otherUserId: string) => {
         },
       });
 
-    console.log(
-      '💬 Server: Existing participation found:',
-      existingParticipation ? 'YES' : 'NO'
-    );
+    // If conversation exists but is archived, unarchive it
     if (existingParticipation) {
-      // If conversation exists but is archived, unarchive it
       if (existingParticipation.archivedAt) {
         await prisma.conversationParticipant.update({
           where: {
@@ -104,10 +101,6 @@ export const createOrFindConversation = async (otherUserId: string) => {
         });
       }
 
-      console.log(
-        '✅ Server: Returning existing conversation:',
-        existingParticipation.conversation.id
-      );
       return {
         success: true,
         conversationId: existingParticipation.conversation.id,
@@ -117,7 +110,6 @@ export const createOrFindConversation = async (otherUserId: string) => {
     }
 
     // Create a new conversation
-    console.log('➕ Server: Creating new conversation');
     const conversation = await prisma.conversation.create({
       data: {
         participants: {

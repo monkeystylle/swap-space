@@ -95,7 +95,6 @@ export const MessageUserButton = ({
   });
 
   const handleMessageUser = () => {
-    console.log('🔄 Starting conversation with user:', userId, username);
     createConversationMutation.mutate(userId);
   };
 
