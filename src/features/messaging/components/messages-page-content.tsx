@@ -12,11 +12,13 @@ import { sendMessage } from '@/features/messaging/actions/send-message';
 import { archiveConversation } from '@/features/messaging/actions/archive-conversation';
 import { markMessagesAsRead } from '@/features/messaging/actions/mark-messages-read';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { signInPath } from '@/paths';
 import { v4 as uuidv4 } from 'uuid';
+import { MessagesLoadingSkeleton } from './messages-loading-skeleton';
 
 export function MessagesPageContent() {
-  const { user, isFetched } = useAuth();
+  // Since we're in the authenticated layout, we know user exists
+  // No need for isFetched check or redirect logic
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -288,34 +290,9 @@ export function MessagesPageContent() {
     }
   };
 
-  // Effect to redirect to sign-in if user is not authenticated
-  useEffect(() => {
-    if (isFetched && !user) {
-      router.push(signInPath());
-    }
-  }, [isFetched, user, router]);
-
-  // Show loading while checking authentication
-  if (!isFetched) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Loading...
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Redirect if not authenticated (will be handled by useEffect)
+  // Early return with skeleton if user is still being fetched
   if (!user) {
-    return null;
+    return <MessagesLoadingSkeleton />;
   }
 
   return (
