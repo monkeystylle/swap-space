@@ -24,8 +24,12 @@ export const useConversations = (userId?: string) => {
       return result.conversations || [];
     },
     enabled: !!userId,
-    staleTime: 1000 * 60, // 1 minute
-    refetchInterval: 1000 * 30, // 30 seconds for real-time feel
+    staleTime: 1 * 60 * 1000, // 1 minute - conversations need to update when new messages arrive
+    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
+    refetchInterval: 30000, // 30 seconds - good balance for conversation list updates
+    refetchOnWindowFocus: false, // Don't refetch when switching tabs
+    refetchOnMount: false, // Don't refetch when component mounts if data exists
+    refetchOnReconnect: true, // Do refetch when connection is restored
   });
 };
 
