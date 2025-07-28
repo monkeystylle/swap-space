@@ -8,11 +8,10 @@ import { ConversationList } from '@/features/messaging/components/conversation-l
 import { ChatInterface } from '@/features/messaging/components/chat-interface';
 import { useConversations } from '@/features/messaging/hooks/use-conversations';
 import { useMessages } from '@/features/messaging/hooks/use-messages';
-import { sendMessage } from '@/features/messaging/actions/send-message';
+import { useSendMessage } from '@/features/messaging/hooks/use-send-message'; // Import the new hook
 import { archiveConversation } from '@/features/messaging/actions/archive-conversation';
 import { markMessagesAsRead } from '@/features/messaging/actions/mark-messages-read';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { v4 as uuidv4 } from 'uuid';
+import { useQueryClient } from '@tanstack/react-query';
 import { MessagesLoadingSkeleton } from './messages-loading-skeleton';
 
 export function MessagesPageContent() {
@@ -49,119 +48,8 @@ export function MessagesPageContent() {
     user?.id
   );
 
-  // Send message mutation with proper optimistic updates
-  const sendMessageMutation = useMutation({
-    mutationFn: ({
-      conversationId,
-      content,
-    }: {
-      conversationId: string;
-      content: string;
-    }) => sendMessage(conversationId, content),
-
-    onMutate: async ({ conversationId, content }) => {
-      // Cancel any outgoing refetches so they don't overwrite our optimistic update
-      await queryClient.cancelQueries({
-        queryKey: ['messages', conversationId, user?.id],
-      });
-
-      // Get the current messages from cache
-      const previousMessages = queryClient.getQueryData([
-        'messages',
-        conversationId,
-        user?.id,
-      ]);
-
-      // Create optimistic message - Stage 1: Show only "Sending..."
-      const optimisticMessage = {
-        id: uuidv4(),
-        content: content.trim(), // Store the actual content but won't show initially
-        createdAt: new Date().toISOString(),
-        senderId: user!.id,
-        senderUsername: user!.username,
-        isOptimistic: true, // Mark as optimistic
-        isSending: true, // New flag for "Sending..." stage
-      };
-
-      // Optimistically update the messages cache
-      queryClient.setQueryData(
-        ['messages', conversationId, user?.id],
-        (oldData: typeof messages) => {
-          if (!oldData) return [optimisticMessage];
-          return [...oldData, optimisticMessage];
-        }
-      );
-
-      // Stage 2: After 1 second, show the actual message content
-      const timeoutId = setTimeout(() => {
-        queryClient.setQueryData(
-          ['messages', conversationId, user?.id],
-          (oldData: typeof messages) => {
-            if (!oldData) return oldData;
-            return oldData.map(msg =>
-              msg.id === optimisticMessage.id
-                ? { ...msg, isSending: false } // Remove sending flag, keep isOptimistic
-                : msg
-            );
-          }
-        );
-      }, 1000);
-
-      // Return context for rollback and cleanup
-      return { previousMessages, optimisticMessage, timeoutId };
-    },
-
-    onError: (error, { conversationId }, context) => {
-      // Clear timeout if it exists
-      if (context?.timeoutId) {
-        clearTimeout(context.timeoutId);
-      }
-
-      // If the mutation fails, rollback to previous data
-      if (context?.previousMessages) {
-        queryClient.setQueryData(
-          ['messages', conversationId, user?.id],
-          context.previousMessages
-        );
-      }
-      console.error('Failed to send message:', error);
-    },
-
-    onSuccess: (result, { conversationId }, context) => {
-      // Clear timeout since we're handling the success
-      if (context?.timeoutId) {
-        clearTimeout(context.timeoutId);
-      }
-
-      if (result.success) {
-        // Replace optimistic message with real message
-        queryClient.setQueryData(
-          ['messages', conversationId, user?.id],
-          (oldData: typeof messages) => {
-            if (!oldData) return [result.message];
-
-            // Remove optimistic message and add real message
-            const withoutOptimistic = oldData.filter(
-              msg => msg.id !== context?.optimisticMessage.id
-            );
-            return [...withoutOptimistic, result.message];
-          }
-        );
-
-        // Invalidate conversations to update last message
-        queryClient.invalidateQueries({
-          queryKey: ['conversations', user?.id],
-        });
-      }
-    },
-
-    onSettled: (result, error, { conversationId }) => {
-      // Always invalidate to ensure we have the latest data
-      queryClient.invalidateQueries({
-        queryKey: ['messages', conversationId, user?.id],
-      });
-    },
-  });
+  // Use the custom send message hook
+  const sendMessageMutation = useSendMessage({ user });
 
   // Effect to handle URL changes and set selected conversation
   useEffect(() => {
@@ -239,11 +127,11 @@ export function MessagesPageContent() {
     }
   };
 
-  // Handle sending a message using the mutation
+  // Handle sending a message using the custom hook
   const handleSendMessage = async (content: string) => {
     if (!selectedConversationId || !user) return;
 
-    // Use the mutation - optimistic update happens in onMutate
+    // Use the custom hook - optimistic update happens in the hook
     sendMessageMutation.mutate({
       conversationId: selectedConversationId,
       content,
