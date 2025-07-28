@@ -2,14 +2,13 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Archive, User as UserIcon } from 'lucide-react';
 import { capitalizeFirstLetter } from '@/utils/text-utils';
 import { getAvatarColor } from '@/utils/avatar-colors';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/features/auth/hooks/use-auth';
+import { useCachedAuth } from '@/features/auth/hooks/use-cached-auth';
 import { getMessagesAction } from '../actions/get-messages-action';
 
 export interface ConversationSummary {
@@ -42,7 +41,7 @@ export const ConversationList = ({
   isLoading,
 }: ConversationListProps) => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useCachedAuth();
 
   const activeConversations = conversations.filter(conv => !conv.isArchived);
 
@@ -63,18 +62,30 @@ export const ConversationList = ({
 
   if (isLoading) {
     return (
-      <Card className="w-full h-full">
-        <div className="p-4">
-          <h3 className="font-semibold mb-4">Conversations</h3>
+      <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900">
+        {/* Conversation List Header Skeleton */}
+        <div className="h-16 px-4 flex items-center flex-shrink-0 border-b border-gray-200 dark:border-gray-700">
+          <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-24 animate-pulse"></div>
+        </div>
+
+        {/* Conversation Items Skeleton */}
+        <div className="flex-1 p-4 min-h-0">
           <div className="space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+            {[1, 2, 3, 4, 5].map(i => (
+              <div
+                key={i}
+                className="flex items-center space-x-3 p-3 rounded-lg animate-pulse"
+              >
+                <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full flex-shrink-0"></div>
+                <div className="flex-1 min-w-0">
+                  <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
-import { useAuth } from '@/features/auth/hooks/use-auth';
+import { useCachedAuth } from '@/features/auth/hooks/use-cached-auth';
 import { ConversationList } from '@/features/messaging/components/conversation-list';
 import { ChatInterface } from '@/features/messaging/components/chat-interface';
 import { useConversations } from '@/features/messaging/hooks/use-conversations';
@@ -16,8 +16,8 @@ import { MessagesLoadingSkeleton } from './messages-loading-skeleton';
 
 export function MessagesPageContent() {
   // Since we're in the authenticated layout, we know user exists
-  // No need for isFetched check or redirect logic
-  const { user } = useAuth();
+  // Now properly handle loading state from useCachedAuth for better performance
+  const { user, isLoading: authLoading } = useCachedAuth();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -178,7 +178,13 @@ export function MessagesPageContent() {
     }
   };
 
-  // Early return with skeleton if user is still being fetched
+  // Early return with skeleton only if auth is still loading
+  if (authLoading) {
+    return <MessagesLoadingSkeleton />;
+  }
+
+  // If auth completed but no user, they shouldn't be on this page
+  // (handled by authenticated layout, but just in case)
   if (!user) {
     return <MessagesLoadingSkeleton />;
   }
