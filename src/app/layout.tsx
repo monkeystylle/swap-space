@@ -33,7 +33,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextTopLoader color="var(--primary)" />
+        <NextTopLoader
+          color="var(--primary)"
+          height={2}
+          showSpinner={false}
+          speed={800}
+          easing="ease"
+        />
         <NuqsAdapter>
           <ThemeProvider>
             <ReactQueryProvider>

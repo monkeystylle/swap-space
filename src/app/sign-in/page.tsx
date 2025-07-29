@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { CardCompact } from '@/components/card-compact';
 import { SignInForm } from '@/features/auth/components/sign-in-form';
-import { passwordForgotPath, signUpPath } from '@/paths';
+import { signUpPath } from '@/paths';
 
 const SignInPage = () => {
   return (
@@ -17,12 +17,12 @@ const SignInPage = () => {
               No account yet?
             </Link>
 
-            <Link
+            {/* <Link
               className="text-sm text-muted-foreground"
               href={passwordForgotPath()}
             >
               Forgot Password?
-            </Link>
+            </Link> */}
           </>
         }
       />

@@ -13,6 +13,7 @@ import {
 import { useAuth } from '@/features/auth/hooks/use-auth';
 import { useUnreadCount } from '@/features/messaging/hooks/use-unread-count';
 import { NotificationDropdown } from '@/features/notification/components/notification-dropdown';
+import { useRoutePrefetch } from '@/hooks/use-route-prefetch';
 import {
   homePath,
   signInPath,
@@ -27,6 +28,7 @@ const Navbar = () => {
   const { user, isFetched } = useAuth();
   const pathname = usePathname();
   const { data: unreadCount = 0 } = useUnreadCount(user?.id);
+  const { prefetchRoute } = useRoutePrefetch();
 
   if (!isFetched) {
     return null;
@@ -69,6 +71,7 @@ const Navbar = () => {
         <Link
           href={homePath()}
           className={buttonVariants({ variant: 'ghost' })}
+          prefetch={true}
         >
           <LucideKanban />
           <h1 className="text-lg font-semibold">Swap Space</h1>
@@ -90,7 +93,7 @@ const Navbar = () => {
                 }`}
                 asChild
               >
-                <Link href={homePath()}>
+                <Link href={homePath()} prefetch={true}>
                   <Home className="!h-7 !w-7" />
                 </Link>
               </Button>
@@ -112,7 +115,7 @@ const Navbar = () => {
                 }`}
                 asChild
               >
-                <Link href={usersWallPath(user.id)}>
+                <Link href={usersWallPath(user.id)} prefetch={true}>
                   <User className="!h-7 !w-7" />
                 </Link>
               </Button>
@@ -133,8 +136,9 @@ const Navbar = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 asChild
+                onMouseEnter={() => prefetchRoute(messagesPath())}
               >
-                <Link href={messagesPath()}>
+                <Link href={messagesPath()} prefetch={true}>
                   <Mail className="!h-7 !w-7" />
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full"></span>
@@ -159,7 +163,7 @@ const Navbar = () => {
                 }`}
                 asChild
               >
-                <Link href={disclaimerPath()}>
+                <Link href={disclaimerPath()} prefetch={true}>
                   <Info className="!h-7 !w-7" />
                 </Link>
               </Button>
