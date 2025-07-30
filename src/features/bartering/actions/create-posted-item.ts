@@ -24,6 +24,14 @@ const createPostedItemSchema = z.object({
     .string()
     .min(1, 'Details are required')
     .max(1024, 'Details must be less than 1024 characters'),
+  category: z.enum(['ITEM', 'SERVICE'], {
+    required_error: 'Category is required',
+  }),
+  tag: z
+    .string()
+    .max(50, 'Tag must be less than 50 characters')
+    .optional()
+    .or(z.literal('')),
 });
 
 // Type for our form values
@@ -45,7 +53,8 @@ export const createPostedItem = async (
     const { user } = await getAuthOrRedirect();
 
     // Validate the input data
-    const { title, details } = createPostedItemSchema.parse(values);
+    const { title, details, category, tag } =
+      createPostedItemSchema.parse(values);
 
     // convert the image file to a buffer
     //buffer is a binary data that can be uploaded to cloudinary
@@ -77,6 +86,8 @@ export const createPostedItem = async (
       data: {
         title,
         details,
+        category,
+        tag: tag && tag.trim() ? tag.trim() : null, // Clean up tag
         imagePublicId: cloudinaryResponse.public_id,
         imageSecureUrl: cloudinaryResponse.secure_url,
         userId: user.id,

@@ -48,13 +48,13 @@ export const PostedItemGridCard = ({
             </div>
           )}
 
-          {/* Status Badge */}
+          {/* Category Badge */}
           <div className="absolute top-2 right-2">
             <Badge
-              variant={postedItem.status === 'OPEN' ? 'default' : 'secondary'}
+              variant={postedItem.category === 'ITEM' ? 'default' : 'outline'}
               className="text-xs"
             >
-              {postedItem.status}
+              {postedItem.category}
             </Badge>
           </div>
         </div>
@@ -65,6 +65,15 @@ export const PostedItemGridCard = ({
           <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-2 overflow-hidden">
             <span className="block truncate">{postedItem.title}</span>
           </h3>
+
+          {/* Tag Badge - Show only if tag exists */}
+          {postedItem.tag && (
+            <div className="mb-2">
+              <Badge variant="secondary" className="text-xs">
+                {postedItem.tag}
+              </Badge>
+            </div>
+          )}
 
           {/* Offers Count */}
           <div className="flex flex-col">

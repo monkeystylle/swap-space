@@ -17,6 +17,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Form,
   FormControl,
   FormField,
@@ -38,6 +45,14 @@ const updatePostedItemFormSchema = z.object({
     .string()
     .min(1, 'Details are required')
     .max(1024, 'Details must be less than 1024 characters'),
+  category: z.enum(['ITEM', 'SERVICE'], {
+    required_error: 'Category is required',
+  }),
+  tag: z
+    .string()
+    .max(50, 'Tag must be less than 50 characters')
+    .optional()
+    .or(z.literal('')),
 });
 
 // Type for form values
@@ -49,6 +64,8 @@ interface UpdatePostedItemFormProps {
   initialData: {
     title: string;
     details: string;
+    category: 'ITEM' | 'SERVICE';
+    tag?: string;
     imageUrl?: string;
   };
   onSuccess?: () => void; // Called when post is updated successfully
@@ -70,6 +87,8 @@ export const UpdatePostedItemForm: React.FC<UpdatePostedItemFormProps> = ({
     defaultValues: {
       title: initialData.title,
       details: initialData.details,
+      category: initialData.category,
+      tag: initialData.tag || '',
     },
   });
 
@@ -80,7 +99,13 @@ export const UpdatePostedItemForm: React.FC<UpdatePostedItemFormProps> = ({
       data,
     }: {
       id: string;
-      data: { title: string; details: string; image?: File };
+      data: {
+        title: string;
+        details: string;
+        category: 'ITEM' | 'SERVICE';
+        tag?: string;
+        image?: File;
+      };
     }) => updatePostedItem(id, data),
     onSuccess: result => {
       if (result.status === 'SUCCESS') {
@@ -165,6 +190,8 @@ export const UpdatePostedItemForm: React.FC<UpdatePostedItemFormProps> = ({
       data: {
         title: values.title,
         details: values.details,
+        category: values.category,
+        tag: values.tag,
         image: selectedFile || undefined,
       },
     });
@@ -178,6 +205,32 @@ export const UpdatePostedItemForm: React.FC<UpdatePostedItemFormProps> = ({
     <div className="space-y-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Category Field */}
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger disabled={isSubmitting}>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="ITEM">Item</SelectItem>
+                    <SelectItem value="SERVICE">Service</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* Title Field */}
           <FormField
             control={form.control}
@@ -190,6 +243,26 @@ export const UpdatePostedItemForm: React.FC<UpdatePostedItemFormProps> = ({
                     placeholder="What are you offering to trade?"
                     {...field}
                     disabled={isSubmitting}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Tag Field */}
+          <FormField
+            control={form.control}
+            name="tag"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tag (optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Add a short keyword tag..."
+                    {...field}
+                    disabled={isSubmitting}
+                    maxLength={50}
                   />
                 </FormControl>
                 <FormMessage />

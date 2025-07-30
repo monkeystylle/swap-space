@@ -13,7 +13,7 @@ import {
 
 export const useSearchPostedItems = (params: SearchPostedItemsParams) => {
   return useInfiniteQuery({
-    queryKey: ['search-posted-items', params.searchTerm],
+    queryKey: ['search-posted-items', params.searchTerm, params.category],
     queryFn: ({ pageParam = 1 }) =>
       searchPostedItems({
         ...params,

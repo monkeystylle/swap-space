@@ -20,7 +20,18 @@ export const getPostedItems = async (): Promise<PostedItemWithDetails[]> => {
 
     // Fetch all posted items with user and offer count
     const postedItems = await prisma.postedItem.findMany({
-      include: {
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        title: true,
+        details: true,
+        status: true,
+        category: true,
+        tag: true,
+        imagePublicId: true,
+        imageSecureUrl: true,
+        userId: true,
         user: {
           select: {
             id: true,

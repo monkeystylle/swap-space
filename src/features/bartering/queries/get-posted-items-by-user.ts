@@ -25,7 +25,18 @@ export const getPostedItemsByUser = async (
       where: {
         userId: userId,
       },
-      include: {
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        title: true,
+        details: true,
+        status: true,
+        category: true,
+        tag: true,
+        imagePublicId: true,
+        imageSecureUrl: true,
+        userId: true,
         user: {
           select: {
             id: true,

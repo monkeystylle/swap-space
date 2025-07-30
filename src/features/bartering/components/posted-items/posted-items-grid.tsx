@@ -18,9 +18,13 @@ import { ViewOffersModal } from '../offers/view-offers-modal';
 
 interface PostedItemsGridProps {
   searchTerm?: string;
+  category?: 'ITEM' | 'SERVICE' | 'ALL';
 }
 
-export const PostedItemsGrid = ({ searchTerm = '' }: PostedItemsGridProps) => {
+export const PostedItemsGrid = ({
+  searchTerm = '',
+  category = 'ALL',
+}: PostedItemsGridProps) => {
   const [selectedPostedItem, setSelectedPostedItem] =
     useState<PostedItemWithDetails | null>(null);
   const [showOffersModal, setShowOffersModal] = useState(false);
@@ -34,7 +38,7 @@ export const PostedItemsGrid = ({ searchTerm = '' }: PostedItemsGridProps) => {
     isFetchingNextPage,
     status,
     refetch,
-  } = useSearchPostedItems({ searchTerm });
+  } = useSearchPostedItems({ searchTerm, category });
 
   // Intersection observer for infinite scroll
   const { ref, inView } = useInView({
