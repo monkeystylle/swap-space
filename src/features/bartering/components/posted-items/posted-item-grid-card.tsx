@@ -1,7 +1,6 @@
 /**
- * PostedItemGridCard Component
- * Compact card component optimized for grid layout
- * Shows image, title, and number of offers
+ * PostedItemGridCard Component - Option 2: Tag Beside Offers
+ * Tag badge positioned next to the offers count
  */
 
 'use client';
@@ -28,7 +27,7 @@ export const PostedItemGridCard = ({
     >
       <CardContent className="p-0">
         {/* Image Section */}
-        <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800  overflow-hidden">
+        <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden">
           {postedItem.imageSecureUrl ? (
             <Image
               src={postedItem.imageSecureUrl}
@@ -51,8 +50,8 @@ export const PostedItemGridCard = ({
           {/* Category Badge */}
           <div className="absolute top-2 right-2">
             <Badge
-              variant={postedItem.category === 'ITEM' ? 'default' : 'outline'}
-              className="text-xs"
+              variant="default"
+              className="text-xs border border-gray-300/50 dark:border-gray-300/30 shadow-sm bg-gray-900/95 dark:bg-white/95 text-gray-100 dark:text-gray-900 block truncate max-w-24"
             >
               {postedItem.category}
             </Badge>
@@ -66,23 +65,26 @@ export const PostedItemGridCard = ({
             <span className="block truncate">{postedItem.title}</span>
           </h3>
 
-          {/* Tag Badge - Show only if tag exists */}
-          {postedItem.tag && (
-            <div className="mb-2">
-              <Badge variant="secondary" className="text-xs">
-                {postedItem.tag}
-              </Badge>
-            </div>
-          )}
-
-          {/* Offers Count */}
+          {/* Offers Count and Tag Badge */}
           <div className="flex flex-col">
-            <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-sm">
-                {postedItem._count.offers}{' '}
-                {postedItem._count.offers === 1 ? 'offer' : 'offers'}
-              </span>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-sm">
+                  {postedItem._count.offers}{' '}
+                  {postedItem._count.offers === 1 ? 'offer' : 'offers'}
+                </span>
+              </div>
+
+              {/* Tag Badge - Show only if tag exists */}
+              {postedItem.tag && (
+                <Badge
+                  variant="secondary"
+                  className="text-xs block truncate max-w-20"
+                >
+                  {postedItem.tag}
+                </Badge>
+              )}
             </div>
 
             {/* User indicator */}
