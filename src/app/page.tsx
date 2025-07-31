@@ -34,7 +34,7 @@ function SearchableContent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-8">
       {/* Search and Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-4 w-full">
         {/* Search Bar */}
@@ -47,12 +47,12 @@ function SearchableContent() {
         </div>
 
         {/* Category Filter */}
-        <div className="">
+        <div className=" ">
           <Select
             value={category || 'ALL'}
             onValueChange={handleCategoryChange}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
@@ -76,7 +76,7 @@ function SearchableContent() {
 // Loading fallback for the suspense boundary
 function SearchableContentFallback() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-8">
       {/* Search and Filter Bar Skeleton */}
       <div className="flex flex-col sm:flex-row gap-4 w-full">
         {/* Search Bar Skeleton */}
