@@ -29,6 +29,12 @@ const updatePostedItemSchema = z.object({
     .min(1, 'Details cannot be empty')
     .max(1024, 'Details must be less than 1024 characters')
     .optional(),
+  category: z.enum(['ITEM', 'SERVICE']).optional(),
+  tag: z
+    .string()
+    .max(50, 'Tag must be less than 50 characters')
+    .optional()
+    .or(z.literal('')),
 });
 
 // Type for form input data
@@ -51,7 +57,13 @@ export const updatePostedItem = async (
     const { user } = await getAuthOrRedirect();
 
     // Ensure at least one field is being updated
-    if (!input.title && !input.details && !input.image) {
+    if (
+      !input.title &&
+      !input.details &&
+      !input.category &&
+      !input.tag &&
+      !input.image
+    ) {
       return toActionState('ERROR', 'At least one field must be updated');
     }
 
@@ -60,6 +72,16 @@ export const updatePostedItem = async (
       where: {
         id: postedItemId,
         userId: user.id, // Security: Only allow user to update their own posts
+      },
+      select: {
+        id: true,
+        title: true,
+        details: true,
+        category: true,
+        tag: true,
+        imagePublicId: true,
+        imageSecureUrl: true,
+        userId: true,
       },
     });
 
@@ -79,11 +101,20 @@ export const updatePostedItem = async (
     const updateData: {
       title: string; // Always has a value
       details: string; // Always has a value
+      category: 'ITEM' | 'SERVICE'; // Always has a value
+      tag?: string | null;
       imagePublicId?: string;
       imageSecureUrl?: string;
     } = {
       title: validatedInput.title ?? existingPostedItem.title,
       details: validatedInput.details ?? existingPostedItem.details,
+      category: validatedInput.category ?? existingPostedItem.category,
+      tag:
+        validatedInput.tag !== undefined
+          ? validatedInput.tag && validatedInput.tag.trim()
+            ? validatedInput.tag.trim()
+            : null
+          : existingPostedItem.tag,
     };
 
     // Handle image replacement if new image is provided

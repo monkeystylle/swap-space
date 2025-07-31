@@ -20,7 +20,18 @@ const ItemPage = async ({ params }: ItemPageProps) => {
     where: {
       id: id,
     },
-    include: {
+    select: {
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      title: true,
+      details: true,
+      status: true,
+      category: true,
+      tag: true,
+      imagePublicId: true,
+      imageSecureUrl: true,
+      userId: true,
       user: {
         select: {
           id: true,
@@ -29,7 +40,14 @@ const ItemPage = async ({ params }: ItemPageProps) => {
         },
       },
       offers: {
-        include: {
+        select: {
+          id: true,
+          createdAt: true,
+          content: true,
+          imagePublicId: true,
+          imageSecureUrl: true,
+          postedItemId: true,
+          userId: true,
           user: {
             select: {
               id: true,

@@ -6,6 +6,8 @@ export interface PostedItemWithDetails {
   title: string;
   details: string;
   status: 'OPEN' | 'DONE';
+  category: 'ITEM' | 'SERVICE';
+  tag: string | null;
   imagePublicId: string | null;
   imageSecureUrl: string | null;
   userId: string;

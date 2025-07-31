@@ -19,6 +19,11 @@ enum PostedItemStatus {
   DONE
 }
 
+enum PostedItemCategory {
+  ITEM
+  SERVICE
+}
+
 model User {
   id           String       @id @default(cuid())
   username     String       @unique
@@ -51,6 +56,8 @@ model PostedItem {
   title       String
   details     String           @db.VarChar(1024)
   status      PostedItemStatus @default(OPEN)
+  category    PostedItemCategory @default(ITEM) // New field with default value
+  tag         String?            @db.VarChar(50) // Simple string tag
   
   // Cloudinary image info
   imagePublicId String?        // Cloudinary public_id for the image
@@ -62,6 +69,7 @@ model PostedItem {
   notifications Notification[]
 
   @@index([userId])
+  @@index([category]) // Add index for filtering by category
 }
 
 model Offer {

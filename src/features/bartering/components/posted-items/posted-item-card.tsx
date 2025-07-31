@@ -277,6 +277,8 @@ export const PostedItemCard = ({
             initialData={{
               title: postedItem.title,
               details: postedItem.details,
+              category: postedItem.category,
+              tag: postedItem.tag || undefined,
               imageUrl: postedItem.imageSecureUrl || undefined,
             }}
             onSuccess={handleEditSuccess}
