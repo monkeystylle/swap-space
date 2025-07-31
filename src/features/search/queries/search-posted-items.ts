@@ -66,7 +66,7 @@ export const searchPostedItems = async ({
     // Category filter
     let categoryFilter = '';
     if (category && category !== 'ALL') {
-      categoryFilter = `AND p.category = $${paramCounter}`;
+      categoryFilter = `AND p.category::text = $${paramCounter}`;
       countParams.push(category);
       itemsParams.push(category);
       paramCounter++;
@@ -102,8 +102,8 @@ export const searchPostedItems = async ({
     }
 
     // Add pagination parameters only to items query
-    const limitParam = `$${paramCounter}`;
-    const offsetParam = `$${paramCounter + 1}`;
+    const limitParam = paramCounter;
+    const offsetParam = paramCounter + 1;
     itemsParams.push(limit, skip);
 
     // SQL query for counting total results
@@ -140,7 +140,7 @@ export const searchPostedItems = async ({
       ${categoryFilter}
       ${searchFilter}
       ORDER BY p."createdAt" DESC
-      LIMIT ${limitParam} OFFSET ${offsetParam}
+      LIMIT $${limitParam} OFFSET $${offsetParam}
     `;
 
     // Execute both queries with their respective parameters

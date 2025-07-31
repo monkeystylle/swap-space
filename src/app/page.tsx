@@ -38,7 +38,7 @@ function SearchableContent() {
       {/* Search and Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-4 w-full">
         {/* Search Bar */}
-        <div className="flex-1">
+        <div className="w-full">
           <SearchBar
             onSearch={handleSearch}
             initialValue={searchTerm || ''}
@@ -47,7 +47,7 @@ function SearchableContent() {
         </div>
 
         {/* Category Filter */}
-        <div className="w-full sm:w-48">
+        <div className="">
           <Select
             value={category || 'ALL'}
             onValueChange={handleCategoryChange}
