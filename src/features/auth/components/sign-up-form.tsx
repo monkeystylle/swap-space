@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { signUp } from '../actions/sign-up';
 import { homePath } from '@/paths';
 import { Separator } from '@/components/ui/separator';
+import { GoogleIcon } from '@/components/ui/google-icon';
 
 const clientSignUpSchema = z
   .object({
@@ -175,7 +176,10 @@ const SignUpForm = () => {
 
       {/* Google Sign Up Button */}
       <Button variant="outline" className="w-full" asChild>
-        <a href="/api/login/google">Sign up with Google</a>
+        <a href="/api/login/google" className="flex items-center gap-2">
+          <GoogleIcon />
+          Sign up with Google
+        </a>
       </Button>
     </div>
   );

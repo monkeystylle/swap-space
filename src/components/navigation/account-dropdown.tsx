@@ -19,6 +19,8 @@ type AccountDropdownProps = {
 };
 
 const AccountDropdown = ({ user }: AccountDropdownProps) => {
+  const isGoogleAuth = user.passwordHash === 'GOOGLE_OAUTH_USER';
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="cursor-pointer">
@@ -35,12 +37,19 @@ const AccountDropdown = ({ user }: AccountDropdownProps) => {
             <span>Profile</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={accountPasswordPath()}>
+        {isGoogleAuth ? (
+          <DropdownMenuItem disabled className="opacity-50 cursor-not-allowed">
             <LucideLock className="mr-2 h-4 w-4" />
-            <span>Password</span>
-          </Link>
-        </DropdownMenuItem>
+            <span>Password (Google Account)</span>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem asChild>
+            <Link href={accountPasswordPath()}>
+              <LucideLock className="mr-2 h-4 w-4" />
+              <span>Password</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <form action={signOut}>

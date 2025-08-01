@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { signIn } from '../actions/sign-in';
 import { homePath } from '@/paths';
 import { Separator } from '@/components/ui/separator';
+import { GoogleIcon } from '@/components/ui/google-icon';
 
 const clientSignInSchema = z.object({
   email: z
@@ -127,7 +128,10 @@ const SignInForm = () => {
 
       {/* Google Sign In Button */}
       <Button variant="outline" className="w-full" asChild>
-        <a href="/api/login/google">Sign in with Google</a>
+        <a href="/api/login/google" className="flex items-center gap-2">
+          <GoogleIcon />
+          Sign in with Google
+        </a>
       </Button>
     </div>
   );
