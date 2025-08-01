@@ -12,6 +12,7 @@ export default function ProfilePage() {
             width={200}
             height={200}
             className="mx-auto"
+            priority={true}
           />
         </div>
         <h1 className="text-4xl font-bold text-muted-foreground">Profile</h1>

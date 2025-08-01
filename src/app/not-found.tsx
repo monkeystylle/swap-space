@@ -12,6 +12,7 @@ export default function NotFound() {
             width={300}
             height={300}
             className="mx-auto"
+            priority={true}
           />
         </div>
         <h1 className="text-3xl font-bold">Page Not Found</h1>
