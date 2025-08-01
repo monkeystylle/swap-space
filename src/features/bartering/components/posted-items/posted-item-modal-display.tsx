@@ -68,11 +68,8 @@ export const PostedItemModalDisplay = ({
                 {timeAgo}
               </span>
               {/* Status Badge */}
-              <Badge
-                variant={postedItem.status === 'OPEN' ? 'default' : 'secondary'}
-                className="text-xs"
-              >
-                {postedItem.status}
+              <Badge variant="default" className="text-xs">
+                {postedItem.category}
               </Badge>
             </div>
           </div>

@@ -9,7 +9,13 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
-import { MoreHorizontal, MessageCircle, Edit, Trash2 } from 'lucide-react';
+import {
+  MoreHorizontal,
+  MessageCircle,
+  Edit,
+  Trash2,
+  Settings,
+} from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -44,6 +50,7 @@ import { PostedItemWithDetails } from '../../queries/posted-item.types';
 import { deletePostedItem } from '../../actions/delete-posted-item';
 import { UpdatePostedItemForm } from './update-posted-item-form';
 import { ViewOffersModal } from '../offers/view-offers-modal';
+import { updatePostedItemStatus } from '../../actions/update-posted-item-status';
 import { getAvatarColor } from '@/utils/avatar-colors';
 import { capitalizeFirstLetter } from '@/utils/text-utils';
 import Link from 'next/link';
@@ -61,6 +68,7 @@ export const PostedItemCard = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showOffersModal, setShowOffersModal] = useState(false);
+  const [showMainDropdown, setShowMainDropdown] = useState(false);
 
   // React Query setup
   const queryClient = useQueryClient();
@@ -72,9 +80,14 @@ export const PostedItemCard = ({
       if (result.status === 'SUCCESS') {
         toast.success(result.message);
 
-        // Invalidate posted items queries to refresh the list
+        // Comprehensive query invalidation to update all views
         queryClient.invalidateQueries({
           queryKey: ['posted-items'],
+        });
+
+        // Invalidate search queries (homepage) to remove deleted items
+        queryClient.invalidateQueries({
+          queryKey: ['search-posted-items'],
         });
 
         // Close dialog and call optional callback for backward compatibility
@@ -87,6 +100,42 @@ export const PostedItemCard = ({
     },
     onError: error => {
       console.error('Unexpected error during deletion:', error);
+      toast.error('Something went wrong. Please try again.');
+    },
+  });
+
+  // Status update mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: ({
+      postId,
+      status,
+    }: {
+      postId: string;
+      status: 'OPEN' | 'DONE';
+    }) => updatePostedItemStatus(postId, status),
+    onSuccess: result => {
+      if (result.status === 'SUCCESS') {
+        toast.success(result.message);
+
+        // Comprehensive query invalidation to update all views
+        queryClient.invalidateQueries({
+          queryKey: ['posted-items'],
+        });
+
+        // Invalidate search queries (homepage) to remove closed items or show opened items
+        queryClient.invalidateQueries({
+          queryKey: ['search-posted-items'],
+        });
+
+        // Call optional callback for backward compatibility
+        onUpdate?.();
+      } else {
+        toast.error(result.message);
+        console.error('Failed to update status:', result.message);
+      }
+    },
+    onError: error => {
+      console.error('Unexpected error during status update:', error);
       toast.error('Something went wrong. Please try again.');
     },
   });
@@ -108,13 +157,24 @@ export const PostedItemCard = ({
     deletePostMutation.mutate(postedItem.id);
   };
 
+  // Handle status change
+  const handleStatusChange = async (status: 'OPEN' | 'DONE') => {
+    updateStatusMutation.mutate({ postId: postedItem.id, status });
+    setShowMainDropdown(false); // Close the main dropdown after status change
+  };
+
   // Handle successful edit
   const handleEditSuccess = () => {
     setShowEditDialog(false);
 
-    // Invalidate posted items queries to refresh the list
+    // Comprehensive query invalidation to update all views
     queryClient.invalidateQueries({
       queryKey: ['posted-items'],
+    });
+
+    // Invalidate search queries (homepage) to show updated content
+    queryClient.invalidateQueries({
+      queryKey: ['search-posted-items'],
     });
 
     // Call optional callback for backward compatibility
@@ -122,10 +182,18 @@ export const PostedItemCard = ({
   };
 
   const isDeleting = deletePostMutation.isPending;
+  const isUpdatingStatus = updateStatusMutation.isPending;
+  const isClosed = postedItem.status === 'DONE';
 
   return (
     <>
-      <Card className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm">
+      <Card
+        className={`w-full border border-gray-200 dark:border-gray-800 shadow-sm transition-all duration-200 ${
+          isClosed
+            ? 'bg-gray-50 dark:bg-gray-950 opacity-75'
+            : 'bg-white dark:bg-gray-900'
+        }`}
+      >
         {/* Post Header */}
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -156,14 +224,19 @@ export const PostedItemCard = ({
                     {timeAgo}
                   </span>
                   {/* Status Badge */}
-                  <Badge
-                    variant={
-                      postedItem.status === 'OPEN' ? 'default' : 'secondary'
-                    }
-                    className="text-xs"
-                  >
-                    {postedItem.status}
+                  <Badge variant="default" className="text-xs">
+                    {postedItem.status === 'DONE' ? 'CLOSE' : postedItem.status}
                   </Badge>
+                  {/* Category Badge */}
+                  <Badge variant="outline" className="text-xs">
+                    {postedItem.category}
+                  </Badge>
+                  {/* Tag Badge */}
+                  {postedItem.tag && (
+                    <Badge variant="secondary" className="text-xs">
+                      {postedItem.tag}
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
@@ -171,20 +244,51 @@ export const PostedItemCard = ({
             {/* Actions Menu - Only show for post owner */}
             {postedItem.isOwner && (
               <div className="-mt-8 -mr-2">
-                <DropdownMenu>
+                <DropdownMenu
+                  open={showMainDropdown}
+                  onOpenChange={setShowMainDropdown}
+                >
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setShowEditDialog(true);
+                        setShowMainDropdown(false);
+                      }}
+                    >
                       <Edit className="mr-2 h-4 w-4" />
                       Edit Post
                     </DropdownMenuItem>
+
+                    {/* Status Change Options - Direct menu items instead of nested dropdown */}
+                    {postedItem.status === 'OPEN' ? (
+                      <DropdownMenuItem
+                        onClick={() => handleStatusChange('DONE')}
+                        disabled={isUpdatingStatus}
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        {isUpdatingStatus ? 'Updating...' : 'Mark as Closed'}
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => handleStatusChange('OPEN')}
+                        disabled={isUpdatingStatus}
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        {isUpdatingStatus ? 'Updating...' : 'Mark as Open'}
+                      </DropdownMenuItem>
+                    )}
+
                     <DropdownMenuItem
-                      onClick={() => setShowDeleteDialog(true)}
-                      className="text-red-600 focus:text-red-600"
+                      onClick={() => {
+                        setShowDeleteDialog(true);
+                        setShowMainDropdown(false);
+                      }}
+                      // className="text-red-600 focus:text-red-600"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete Post
@@ -199,12 +303,24 @@ export const PostedItemCard = ({
         {/* Post Content */}
         <CardContent className="pt-0">
           {/* Post Title */}
-          <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
+          <h3
+            className={`font-semibold text-lg mb-2 ${
+              isClosed
+                ? 'text-gray-500 dark:text-gray-500'
+                : 'text-gray-900 dark:text-gray-100'
+            }`}
+          >
             {postedItem.title}
           </h3>
 
           {/* Post Details */}
-          <p className="whitespace-pre-wrap break-all text-gray-700 dark:text-gray-300 text-sm mb-4 leading-relaxed">
+          <p
+            className={`whitespace-pre-wrap break-all text-sm mb-4 leading-relaxed ${
+              isClosed
+                ? 'text-gray-500 dark:text-gray-500'
+                : 'text-gray-700 dark:text-gray-300'
+            }`}
+          >
             {postedItem.details}
           </p>
 
@@ -216,7 +332,9 @@ export const PostedItemCard = ({
                 alt={postedItem.title}
                 width={600}
                 height={400}
-                className="w-full h-auto object-cover"
+                className={`w-full h-auto object-cover transition-all duration-200 ${
+                  isClosed ? 'grayscale opacity-60' : ''
+                }`}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
@@ -229,8 +347,13 @@ export const PostedItemCard = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-blue-600"
-                onClick={() => setShowOffersModal(true)}
+                className={`cursor-pointer transition-colors ${
+                  isClosed
+                    ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-blue-600'
+                }`}
+                onClick={() => !isClosed && setShowOffersModal(true)}
+                disabled={isClosed}
               >
                 <MessageCircle className="h-4 w-4 mr-1" />
                 <span className="text-sm">

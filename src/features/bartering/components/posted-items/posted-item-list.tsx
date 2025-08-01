@@ -31,7 +31,6 @@ export const PostedItemsList = ({
     isPending,
     error,
     refetch,
-    isRefetching,
   } = useQuery({
     queryKey: ['posted-items', userId],
     queryFn: () => getPostedItemsByUser(userId),
@@ -140,7 +139,7 @@ export const PostedItemsList = ({
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
           Posted Items
         </h2>
-        <Button
+        {/* <Button
           onClick={handleRefresh}
           variant="ghost"
           size="sm"
@@ -151,7 +150,7 @@ export const PostedItemsList = ({
             className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`}
           />
           {isRefetching ? 'Refreshing...' : 'Refresh'}
-        </Button>
+        </Button> */}
       </div>
 
       {/* Posts list */}
