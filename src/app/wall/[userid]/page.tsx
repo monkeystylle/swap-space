@@ -50,7 +50,9 @@ const WallPage = async ({ params }: WallPageProps) => {
             )}
           </div>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
-            View items posted by this user
+            {isOwner
+              ? 'View your posted items'
+              : 'View items posted by this user'}
           </p>
         </div>
 
