@@ -9,7 +9,9 @@ import { getAvatarColor } from '@/utils/avatar-colors';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useCachedAuth } from '@/features/auth/hooks/use-cached-auth';
+import { useMessagingPrefetch } from '../hooks/use-messaging-prefetch';
 import { getMessagesAction } from '../actions/get-messages-action';
+import { useEffect } from 'react';
 
 export interface ConversationSummary {
   id: string;
@@ -42,8 +44,21 @@ export const ConversationList = ({
 }: ConversationListProps) => {
   const queryClient = useQueryClient();
   const { user } = useCachedAuth();
+  const { smartPrefetchMessages } = useMessagingPrefetch({ userId: user?.id });
 
   const activeConversations = conversations.filter(conv => !conv.isArchived);
+
+  // Auto-prefetch messages for priority conversations when conversations load
+  useEffect(() => {
+    if (!isLoading && activeConversations.length > 0 && user?.id) {
+      // Small delay to avoid blocking the UI
+      const timer = setTimeout(() => {
+        smartPrefetchMessages(activeConversations);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [activeConversations, isLoading, user?.id, smartPrefetchMessages]);
 
   // Prefetch messages on hover
   const handleConversationHover = (conversationId: string) => {
