@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useAuth } from '@/features/auth/hooks/use-auth';
 import { useUnreadCount } from '@/features/messaging/hooks/use-unread-count';
+import { useMessagingPrefetch } from '@/features/messaging/hooks/use-messaging-prefetch';
 import { NotificationDropdown } from '@/features/notification/components/notification-dropdown';
 import { useRoutePrefetch } from '@/hooks/use-route-prefetch';
 import {
@@ -29,6 +30,7 @@ const Navbar = () => {
   const pathname = usePathname();
   const { data: unreadCount = 0 } = useUnreadCount(user?.id);
   const { prefetchRoute } = useRoutePrefetch();
+  const { prefetchMessagesPage } = useMessagingPrefetch({ userId: user?.id });
 
   if (!isFetched) {
     return null;
@@ -136,7 +138,10 @@ const Navbar = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 asChild
-                onMouseEnter={() => prefetchRoute(messagesPath())}
+                onMouseEnter={() => {
+                  prefetchRoute(messagesPath());
+                  prefetchMessagesPage();
+                }}
               >
                 <Link href={messagesPath()} prefetch={true}>
                   <Mail className="!h-7 !w-7" />
