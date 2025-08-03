@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
+// import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Archive, User as UserIcon } from 'lucide-react';
@@ -137,12 +137,7 @@ export const ConversationList = ({
                             )}
                           </h4>
                           {conversation.unreadCount > 0 && (
-                            <Badge
-                              variant="default"
-                              className="bg-blue-500 text-white text-xs"
-                            >
-                              {conversation.unreadCount}
-                            </Badge>
+                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                           )}
                         </div>
                         {conversation.lastMessage && (
