@@ -23,7 +23,7 @@ export const useSearchPostedItems = (params: SearchPostedItemsParams) => {
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.hasMore ? allPages.length + 1 : undefined;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 20, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
   });
 };
