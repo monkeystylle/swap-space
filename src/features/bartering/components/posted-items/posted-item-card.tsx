@@ -104,7 +104,7 @@ export const PostedItemCard = ({
     },
   });
 
-  // Status update mutation
+  // Status update mutation with optimistic updates
   const updateStatusMutation = useMutation({
     mutationFn: ({
       postId,
@@ -113,20 +113,96 @@ export const PostedItemCard = ({
       postId: string;
       status: 'OPEN' | 'DONE';
     }) => updatePostedItemStatus(postId, status),
+
+    onMutate: async ({ postId, status }) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['posted-items'] });
+      await queryClient.cancelQueries({ queryKey: ['search-posted-items'] });
+
+      // Snapshot the previous values for rollback
+      const previousPostedItems = queryClient.getQueriesData({
+        queryKey: ['posted-items'],
+      });
+      const previousSearchResults = queryClient.getQueriesData({
+        queryKey: ['search-posted-items'],
+      });
+
+      // Optimistically update all relevant queries
+      queryClient.setQueriesData(
+        { queryKey: ['posted-items'] },
+        (oldData: unknown) => {
+          if (!oldData) return oldData;
+
+          // Handle different data structures (arrays, paginated data, etc.)
+          if (Array.isArray(oldData)) {
+            return (oldData as PostedItemWithDetails[]).map(
+              (item: PostedItemWithDetails) =>
+                item.id === postId ? { ...item, status } : item
+            );
+          }
+
+          // Handle paginated data structure
+          if (
+            typeof oldData === 'object' &&
+            oldData !== null &&
+            'pages' in oldData
+          ) {
+            const paginatedData = oldData as {
+              pages: Array<{
+                data?: PostedItemWithDetails[];
+                [key: string]: unknown;
+              }>;
+              [key: string]: unknown;
+            };
+
+            return {
+              ...paginatedData,
+              pages: paginatedData.pages.map(page => ({
+                ...page,
+                data:
+                  page.data?.map((item: PostedItemWithDetails) =>
+                    item.id === postId ? { ...item, status } : item
+                  ) || page.data,
+              })),
+            };
+          }
+
+          // Handle single item
+          if (
+            typeof oldData === 'object' &&
+            oldData !== null &&
+            'id' in oldData
+          ) {
+            const singleItem = oldData as PostedItemWithDetails;
+            if (singleItem.id === postId) {
+              return { ...singleItem, status };
+            }
+          }
+
+          return oldData;
+        }
+      );
+
+      // Also update search results
+      queryClient.setQueriesData(
+        { queryKey: ['search-posted-items'] },
+        (oldData: unknown) => {
+          if (!oldData || !Array.isArray(oldData)) return oldData;
+
+          return (oldData as PostedItemWithDetails[]).map(
+            (item: PostedItemWithDetails) =>
+              item.id === postId ? { ...item, status } : item
+          );
+        }
+      );
+
+      // Return context for rollback
+      return { previousPostedItems, previousSearchResults };
+    },
+
     onSuccess: result => {
       if (result.status === 'SUCCESS') {
         toast.success(result.message);
-
-        // Comprehensive query invalidation to update all views
-        queryClient.invalidateQueries({
-          queryKey: ['posted-items'],
-        });
-
-        // Invalidate search queries (homepage) to remove closed items or show opened items
-        queryClient.invalidateQueries({
-          queryKey: ['search-posted-items'],
-        });
-
         // Call optional callback for backward compatibility
         onUpdate?.();
       } else {
@@ -134,9 +210,29 @@ export const PostedItemCard = ({
         console.error('Failed to update status:', result.message);
       }
     },
-    onError: error => {
+
+    onError: (error, variables, context) => {
+      // Rollback optimistic updates
+      if (context?.previousPostedItems) {
+        context.previousPostedItems.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+
+      if (context?.previousSearchResults) {
+        context.previousSearchResults.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+
       console.error('Unexpected error during status update:', error);
       toast.error('Something went wrong. Please try again.');
+    },
+
+    onSettled: () => {
+      // Always refetch to ensure we have the latest data
+      queryClient.invalidateQueries({ queryKey: ['posted-items'] });
+      queryClient.invalidateQueries({ queryKey: ['search-posted-items'] });
     },
   });
 
