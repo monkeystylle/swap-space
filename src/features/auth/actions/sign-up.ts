@@ -14,6 +14,11 @@ import { prisma } from '@/lib/prisma';
 // import { ticketsPath } from '@/paths';
 import { generateRandomToken } from '@/utils/crypto';
 import { setSessionCookie } from '../utils/session-cookie';
+import { isPhoneNumberVerified } from '@/lib/otp-verification';
+import {
+  isValidPhilippineNumber,
+  normalizePhilippineNumber,
+} from '@/lib/semaphore';
 
 const signUpSchema = z
   .object({
@@ -29,6 +34,13 @@ const signUpSchema = z
       .min(1, 'Email is required')
       .max(191, 'Email must be less than 191 characters')
       .email('Invalid email address'),
+    phoneNumber: z
+      .string()
+      .min(1, 'Phone number is required')
+      .refine(value => isValidPhilippineNumber(value), {
+        message:
+          'Please enter a valid Philippine mobile number (e.g., 09123456789)',
+      }),
     password: z
       .string()
       .min(6, 'Password must be at least 6 characters')
@@ -55,13 +67,30 @@ export const signUp = async (
 ): Promise<ActionState> => {
   try {
     // Use parse directly - any validation errors will be caught in the catch block
-    const { username, email, password } = signUpSchema.parse(values);
+    const { username, email, phoneNumber, password } =
+      signUpSchema.parse(values);
+
+    const normalizedPhone = normalizePhilippineNumber(phoneNumber);
+
+    // Check if phone number has been verified recently (within 30 minutes)
+    const phoneVerified = await isPhoneNumberVerified(normalizedPhone, 30);
+
+    if (!phoneVerified) {
+      return toActionState(
+        'ERROR',
+        'Phone number must be verified before creating account. Please verify your phone number first.',
+        undefined
+      );
+    }
+
     const passwordHash = await hashPassword(password);
 
     const user = await prisma.user.create({
       data: {
         username,
         email,
+        phoneNumber: normalizedPhone,
+        phoneVerified: true,
         passwordHash,
       },
     });
@@ -84,11 +113,33 @@ export const signUp = async (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      return toActionState(
-        'ERROR',
-        'Either email or username is already in use',
-        undefined
-      );
+      // Check which field caused the unique constraint violation
+      const target = error.meta?.target as string[];
+      if (target?.includes('phoneNumber')) {
+        return toActionState(
+          'ERROR',
+          'This phone number is already registered with another account',
+          undefined
+        );
+      } else if (target?.includes('email')) {
+        return toActionState(
+          'ERROR',
+          'This email address is already registered with another account',
+          undefined
+        );
+      } else if (target?.includes('username')) {
+        return toActionState(
+          'ERROR',
+          'This username is already taken. Please choose a different username.',
+          undefined
+        );
+      } else {
+        return toActionState(
+          'ERROR',
+          'Either email, username, or phone number is already in use',
+          undefined
+        );
+      }
     }
 
     return fromErrorToActionState(error);
