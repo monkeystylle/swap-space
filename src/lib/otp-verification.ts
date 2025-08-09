@@ -8,20 +8,25 @@ const MAX_OTP_ATTEMPTS = 3;
 const RATE_LIMIT_WINDOW_MINUTES = 60; // 1 hour
 const MAX_OTP_REQUESTS_PER_WINDOW = 5;
 
+// UPDATED INTERFACE
 export interface OtpVerificationResult {
   success: boolean;
   message: string;
   canRetry?: boolean;
   remainingAttempts?: number;
   expiresAt?: Date;
+  isRateLimited?: boolean; // ADDED
+  nextRequestAllowedAt?: Date; // ADDED
 }
 
+// UPDATED INTERFACE
 export interface SendOtpResult {
   success: boolean;
   message: string;
   expiresAt?: Date;
   rateLimited?: boolean;
   remainingRequests?: number;
+  nextRequestAllowedAt?: Date; // ADDED
 }
 
 /**
@@ -48,11 +53,32 @@ export async function sendOtpToPhone(
     });
 
     if (recentRequests >= MAX_OTP_REQUESTS_PER_WINDOW) {
+      // ENHANCED: Calculate when next request is allowed
+      const oldestRequest = await prisma.otpVerification.findFirst({
+        where: {
+          phoneNumber: normalizedPhone,
+          createdAt: {
+            gte: oneHourAgo,
+          },
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      const nextAllowedAt = oldestRequest
+        ? new Date(
+            oldestRequest.createdAt.getTime() +
+              RATE_LIMIT_WINDOW_MINUTES * 60 * 1000
+          )
+        : new Date(Date.now() + RATE_LIMIT_WINDOW_MINUTES * 60 * 1000);
+
       return {
         success: false,
         message: `Too many OTP requests. Please wait before requesting another code.`,
         rateLimited: true,
         remainingRequests: 0,
+        nextRequestAllowedAt: nextAllowedAt, // ADDED
       };
     }
 

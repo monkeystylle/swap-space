@@ -33,6 +33,7 @@ export const sendOtp = async (
       return toActionState('ERROR', result.message, undefined, {
         rateLimited: result.rateLimited,
         remainingRequests: result.remainingRequests,
+        nextRequestAllowedAt: result.nextRequestAllowedAt, // ADDED
       });
     }
 

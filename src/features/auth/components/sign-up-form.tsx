@@ -31,7 +31,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Clock, Shield, CheckCircle } from 'lucide-react';
+import { Clock, Shield, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Step 1: Initial sign-up form
 const step1Schema = z
@@ -80,12 +81,31 @@ type Step2FormValues = z.infer<typeof step2Schema>;
 
 type SignUpStep = 'details' | 'verification' | 'completed';
 
+// Verification error states
+interface VerificationState {
+  error: string | null;
+  remainingAttempts: number | null;
+  isExpired: boolean;
+  isRateLimited: boolean;
+  canRetry: boolean;
+}
+
 const SignUpForm = () => {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<SignUpStep>('details');
   const [userDetails, setUserDetails] = useState<Step1FormValues | null>(null);
   const [otpExpiresAt, setOtpExpiresAt] = useState<Date | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [verificationState, setVerificationState] = useState<VerificationState>(
+    {
+      error: null,
+      remainingAttempts: null,
+      isExpired: false,
+      isRateLimited: false,
+      canRetry: true,
+    }
+  );
+  const [hasShownExpiryToast, setHasShownExpiryToast] = useState(false);
 
   // Step 1 form
   const step1Form = useForm<Step1FormValues>({
@@ -119,10 +139,15 @@ const SignUpForm = () => {
 
         setTimeRemaining(remaining);
 
-        if (remaining === 0) {
-          toast.error(
-            'Verification code has expired. Please request a new one.'
-          );
+        // Handle expiration - only show toast once
+        if (remaining === 0 && !hasShownExpiryToast) {
+          setVerificationState(prev => ({
+            ...prev,
+            isExpired: true,
+            error: 'Verification code has expired. Please request a new code.',
+          }));
+          setHasShownExpiryToast(true);
+          toast.error('Verification code has expired');
         }
       }, 1000);
     }
@@ -130,12 +155,23 @@ const SignUpForm = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [otpExpiresAt, currentStep]);
+  }, [otpExpiresAt, currentStep, hasShownExpiryToast]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const resetVerificationState = () => {
+    setVerificationState({
+      error: null,
+      remainingAttempts: null,
+      isExpired: false,
+      isRateLimited: false,
+      canRetry: true,
+    });
+    setHasShownExpiryToast(false);
   };
 
   // Step 1: Handle form submission and send OTP
@@ -146,6 +182,7 @@ const SignUpForm = () => {
       if (result.status === 'SUCCESS') {
         setUserDetails(values);
         setCurrentStep('verification');
+        resetVerificationState();
         if (result.data?.expiresAt) {
           setOtpExpiresAt(new Date(result.data.expiresAt));
         }
@@ -178,6 +215,10 @@ const SignUpForm = () => {
       return;
     }
 
+    // Clear previous errors
+    resetVerificationState();
+    step2Form.clearErrors();
+
     try {
       // First verify the OTP
       const verifyResult = await verifyOtp({
@@ -186,8 +227,18 @@ const SignUpForm = () => {
       });
 
       if (verifyResult.status !== 'SUCCESS') {
-        toast.error(verifyResult.message || 'Invalid verification code');
+        // Update verification state for UI display
+        setVerificationState({
+          error: verifyResult.message || 'Invalid verification code',
+          remainingAttempts: verifyResult.data?.remainingAttempts || null,
+          isExpired: verifyResult.data?.expiresAt
+            ? new Date(verifyResult.data.expiresAt) < new Date()
+            : false,
+          isRateLimited: false, // This would come from the backend
+          canRetry: verifyResult.data?.canRetry ?? true,
+        });
 
+        // Set form field errors if any
         if (verifyResult.fieldErrors) {
           Object.entries(verifyResult.fieldErrors).forEach(
             ([field, errors]) => {
@@ -219,7 +270,10 @@ const SignUpForm = () => {
         setCurrentStep('details');
       }
     } catch (error) {
-      toast.error('An unexpected error occurred');
+      setVerificationState(prev => ({
+        ...prev,
+        error: 'An unexpected error occurred during verification',
+      }));
       console.error(error);
     }
   };
@@ -227,6 +281,8 @@ const SignUpForm = () => {
   // Resend OTP
   const resendOtp = async () => {
     if (!userDetails) return;
+
+    resetVerificationState();
 
     try {
       const result = await sendOtp({ phoneNumber: userDetails.phoneNumber });
@@ -238,7 +294,17 @@ const SignUpForm = () => {
         step2Form.reset({ code: '' });
         toast.success('New verification code sent!');
       } else {
-        toast.error(result.message || 'Failed to resend verification code');
+        if (result.data?.rateLimited) {
+          setVerificationState(prev => ({
+            ...prev,
+            isRateLimited: true,
+            error:
+              result.message ||
+              'Too many requests. Please wait before requesting another code.',
+          }));
+        } else {
+          toast.error(result.message || 'Failed to resend verification code');
+        }
       }
     } catch (error) {
       toast.error('An unexpected error occurred');
@@ -265,6 +331,10 @@ const SignUpForm = () => {
 
   if (currentStep === 'verification') {
     const { isSubmitting } = step2Form.formState;
+    const isCodeExpired = timeRemaining === 0;
+    const canSubmit =
+      !isSubmitting && !isCodeExpired && verificationState.canRetry;
+    const canResend = timeRemaining <= 240 || isCodeExpired; // Allow resend in last 4 minutes or if expired
 
     return (
       <div className="space-y-6">
@@ -280,6 +350,40 @@ const SignUpForm = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Error Display */}
+            {verificationState.error && (
+              <Alert
+                variant={
+                  verificationState.isExpired ? 'default' : 'destructive'
+                }
+                className="mb-4"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {verificationState.error}
+                  {verificationState.remainingAttempts !== null &&
+                    verificationState.remainingAttempts > 0 && (
+                      <div className="mt-1 text-sm">
+                        {verificationState.remainingAttempts} attempt
+                        {verificationState.remainingAttempts !== 1 ? 's' : ''}{' '}
+                        remaining
+                      </div>
+                    )}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Rate Limit Warning */}
+            {verificationState.isRateLimited && (
+              <Alert variant="destructive" className="mb-4">
+                <XCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You reached the maximum number of requests. Please wait before
+                  requesting another code.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Form {...step2Form}>
               <form
                 onSubmit={step2Form.handleSubmit(onStep2Submit)}
@@ -296,6 +400,9 @@ const SignUpForm = () => {
                           placeholder="123456"
                           maxLength={6}
                           className="text-center text-lg tracking-widest"
+                          disabled={
+                            isCodeExpired || !verificationState.canRetry
+                          }
                           {...field}
                         />
                       </FormControl>
@@ -304,19 +411,27 @@ const SignUpForm = () => {
                   )}
                 />
 
-                {timeRemaining > 0 && (
+                {/* Timer Display */}
+                {timeRemaining > 0 ? (
                   <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     <span>Code expires in {formatTime(timeRemaining)}</span>
                   </div>
+                ) : (
+                  otpExpiresAt && (
+                    <div className="flex items-center justify-center gap-2 text-sm text-red-600">
+                      <XCircle className="h-4 w-4" />
+                      <span>Code has expired</span>
+                    </div>
+                  )
                 )}
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitting || timeRemaining === 0}
-                >
-                  {isSubmitting ? 'Verifying...' : 'Verify & Create Account'}
+                <Button type="submit" className="w-full" disabled={!canSubmit}>
+                  {isSubmitting
+                    ? 'Verifying...'
+                    : isCodeExpired
+                      ? 'Code Expired'
+                      : 'Verify & Create Account'}
                 </Button>
               </form>
             </Form>
@@ -325,10 +440,14 @@ const SignUpForm = () => {
               <Button
                 variant="ghost"
                 onClick={resendOtp}
-                disabled={timeRemaining > 240} // Allow resend only in last 4 minutes or if expired
+                disabled={!canResend || verificationState.isRateLimited}
                 className="text-sm"
               >
-                Didn&apos;t receive the code? Resend
+                {verificationState.isRateLimited
+                  ? 'Rate limited - Cannot resend'
+                  : canResend
+                    ? "Didn't receive the code? Resend"
+                    : `Resend available in ${formatTime(timeRemaining - 240)}`}
               </Button>
             </div>
 
@@ -339,6 +458,7 @@ const SignUpForm = () => {
                   setCurrentStep('details');
                   setUserDetails(null);
                   setOtpExpiresAt(null);
+                  resetVerificationState();
                 }}
                 className="text-sm"
               >
@@ -351,12 +471,11 @@ const SignUpForm = () => {
     );
   }
 
-  // Step 1: Details form
+  // Step 1: Details form (unchanged, keeping toast for errors as you mentioned)
   const { isSubmitting } = step1Form.formState;
 
   return (
     <div className="space-y-6">
-      {/* Step 1 Form */}
       <Form {...step1Form}>
         <form
           onSubmit={step1Form.handleSubmit(onStep1Submit)}
@@ -447,14 +566,12 @@ const SignUpForm = () => {
         </form>
       </Form>
 
-      {/* Separator */}
       <div className="flex items-center">
         <Separator className="flex-1" />
         <span className="px-3 text-sm text-muted-foreground">OR</span>
         <Separator className="flex-1" />
       </div>
 
-      {/* Google Sign Up Button */}
       <Button variant="outline" className="w-full" asChild>
         <a href="/api/login/google" className="flex items-center gap-2">
           <GoogleIcon />

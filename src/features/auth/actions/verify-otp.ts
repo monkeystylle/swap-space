@@ -38,6 +38,8 @@ export const verifyOtp = async (
         canRetry: result.canRetry,
         remainingAttempts: result.remainingAttempts,
         expiresAt: result.expiresAt,
+        isRateLimited: result.isRateLimited, // ADDED
+        nextRequestAllowedAt: result.nextRequestAllowedAt, // ADDED
       });
     }
 
