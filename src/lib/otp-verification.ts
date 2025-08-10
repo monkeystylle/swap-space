@@ -197,7 +197,10 @@ export async function verifyOtpCode(
 
       return {
         success: false,
-        message: `Invalid verification code. ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining.`,
+        message:
+          remainingAttempts > 0
+            ? `Invalid verification code. ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining.`
+            : 'Invalid verification code. No attempts remaining.',
         canRetry: remainingAttempts > 0,
         remainingAttempts,
         expiresAt: otpRecord.expiresAt,
