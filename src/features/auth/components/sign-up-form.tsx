@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/password-input';
 import { signUp } from '../actions/sign-up';
 import { sendOtp } from '../actions/send-otp';
 import { verifyOtp } from '../actions/verify-otp';
@@ -567,7 +568,7 @@ const SignUpForm = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••" {...field} />
+                  <PasswordInput placeholder="••••••" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -581,7 +582,7 @@ const SignUpForm = () => {
               <FormItem>
                 <FormLabel>Confirm Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••" {...field} />
+                  <PasswordInput placeholder="••••••" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/password-input';
 import { signIn } from '../actions/sign-in';
 import { homePath } from '@/paths';
 import { Separator } from '@/components/ui/separator';
@@ -106,7 +107,7 @@ const SignInForm = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••" {...field} />
+                  <PasswordInput placeholder="••••••" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
