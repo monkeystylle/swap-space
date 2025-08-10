@@ -200,6 +200,8 @@ const SignUpForm = () => {
         setUserDetails(values);
         setCurrentStep('verification');
         resetVerificationState();
+        // Reset step 2 form to clear any previous verification code
+        step2Form.reset({ code: '' });
         if (result.data?.expiresAt) {
           const expiryDate = new Date(result.data.expiresAt);
           setOtpExpiresAt(expiryDate);
@@ -493,6 +495,8 @@ const SignUpForm = () => {
                   setOtpExpiresAt(null);
                   setResendTimeRemaining(0);
                   resetVerificationState();
+                  // Reset step 2 form to clear verification code input
+                  step2Form.reset({ code: '' });
                 }}
                 className="text-sm"
               >
