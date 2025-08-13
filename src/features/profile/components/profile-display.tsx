@@ -12,9 +12,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { useProfile, useUpdateProfilePicture } from '../hooks/use-profile';
+import { useUpdateProfilePicture } from '../hooks/use-update-profile-picture';
 import { WebcamCapture } from './webcam-capture';
 import { ProfileForm } from './profile-form';
+import { useProfile } from '../hooks/use-profile';
 
 interface ProfileDisplayProps {
   userId: string;

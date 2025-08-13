@@ -36,12 +36,19 @@ export const updateProfilePicture = async (
       (resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
-            folder: 'profile-pictures', // This will create a folder in Cloudinary
+            folder: 'profile-pictures',
             resource_type: 'image',
             transformation: [
-              { width: 400, height: 400, crop: 'fill', gravity: 'face' }, // Crop to square, focus on face
-              { quality: 'auto', fetch_format: 'auto' }, // Optimize quality and format
+              {
+                width: 400,
+                height: 400,
+                crop: 'fill',
+                gravity: 'face', // ✅ Keep face detection - essential for profile pics
+              },
             ],
+            // ✅ Fixed settings instead of 'auto' saves 1 transformation
+            format: 'jpg',
+            quality: 80,
           },
           (error, result) => {
             if (error) reject(error);
@@ -49,7 +56,6 @@ export const updateProfilePicture = async (
             else reject(new Error('Upload failed'));
           }
         );
-
         uploadStream.end(buffer);
       }
     );

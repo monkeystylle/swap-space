@@ -22,7 +22,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
-import { useCreateProfile, useUpdateProfile } from '../hooks/use-profile';
+import { useCreateProfile } from '../hooks/use-create-profile';
+import { useUpdateProfile } from '../hooks/use-update-profile';
 import type { Profile } from '../queries/profile.types';
 
 // Form validation schema
