@@ -13,9 +13,7 @@ export interface Profile {
   middleInitial: string | null;
   street: string | null;
   city: string | null;
-  province: string | null;
   postalCode: string | null;
-  country: string | null;
   isComplete: boolean;
   userId: string;
 }
@@ -26,9 +24,7 @@ export interface CreateProfileData {
   middleInitial?: string;
   street?: string;
   city?: string;
-  province?: string;
   postalCode?: string;
-  country?: string;
 }
 
 export interface UpdateProfileData extends Partial<CreateProfileData> {
@@ -42,7 +38,5 @@ export interface ProfileFormData {
   middleInitial: string;
   street: string;
   city: string;
-  province: string;
   postalCode: string;
-  country: string;
 }

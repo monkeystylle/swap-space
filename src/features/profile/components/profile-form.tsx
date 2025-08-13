@@ -38,7 +38,8 @@ const profileFormSchema = z.object({
     .max(100, 'Given name must be less than 100 characters'),
   middleInitial: z
     .string()
-    .max(5, 'Middle initial must be less than 5 characters')
+    .max(1, 'Middle initial must be 1 character only')
+    .regex(/^[A-Za-z]?$/, 'Middle initial must be a single letter')
     .optional()
     .or(z.literal('')),
   street: z
@@ -49,18 +50,11 @@ const profileFormSchema = z.object({
     .string()
     .min(1, 'City is required')
     .max(100, 'City must be less than 100 characters'),
-  province: z
-    .string()
-    .min(1, 'Province is required')
-    .max(100, 'Province must be less than 100 characters'),
   postalCode: z
     .string()
-    .min(1, 'Postal code is required')
-    .max(20, 'Postal code must be less than 20 characters'),
-  country: z
-    .string()
-    .max(100, 'Country must be less than 100 characters')
-    .optional(),
+    .min(4, 'Postal code must be exactly 4 digits')
+    .max(4, 'Postal code must be exactly 4 digits')
+    .regex(/^\d{4}$/, 'Postal code must be exactly 4 digits'),
 });
 
 // Type for form values
@@ -95,9 +89,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
       middleInitial: profile?.middleInitial || '',
       street: profile?.street || '',
       city: profile?.city || '',
-      province: profile?.province || '',
       postalCode: profile?.postalCode || '',
-      country: profile?.country || 'Philippines',
     },
   });
 
@@ -186,9 +178,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                   <FormLabel>Middle Initial</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="M.I."
-                      maxLength={5}
-                      className="max-w-24"
+                      placeholder="M"
+                      maxLength={1}
+                      className="max-w-16"
                       {...field}
                       disabled={isSubmitting}
                     />
@@ -244,27 +236,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                 )}
               />
 
-              {/* Province */}
-              <FormField
-                control={form.control}
-                name="province"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Province *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your province"
-                        {...field}
-                        disabled={isSubmitting}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Postal Code */}
               <FormField
                 control={form.control}
@@ -274,26 +245,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                     <FormLabel>Postal Code *</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enter postal code"
-                        {...field}
-                        disabled={isSubmitting}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Country */}
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Philippines"
+                        placeholder="1234"
+                        maxLength={4}
                         {...field}
                         disabled={isSubmitting}
                       />

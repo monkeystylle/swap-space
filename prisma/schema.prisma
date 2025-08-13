@@ -197,14 +197,12 @@ model Profile {
   // Name details
   surname      String?  @db.VarChar(100)
   givenName    String?  @db.VarChar(100)
-  middleInitial String? @db.VarChar(5) // Just the initial
+  middleInitial String? @db.VarChar(1) // Just the initial - one character only
   
   // Address details
   street       String?  @db.VarChar(200)
   city         String?  @db.VarChar(100)
-  province     String?  @db.VarChar(100)
-  postalCode   String?  @db.VarChar(20)
-  country      String?  @db.VarChar(100) @default("Philippines")
+  postalCode   String?  @db.VarChar(4) // Philippine postal codes are exactly 4 digits
   
   // Profile completion tracking
   isComplete   Boolean  @default(false) // Auto-calculated based on required fields

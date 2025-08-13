@@ -91,7 +91,6 @@ export const updateProfilePicture = async (
         profile.givenName &&
         profile.street &&
         profile.city &&
-        profile.province &&
         profile.postalCode
       );
 

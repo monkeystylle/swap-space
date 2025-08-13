@@ -189,22 +189,10 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
                           {profile.city}
                         </p>
                       )}
-                      {profile?.province && (
-                        <p className="text-base">
-                          <span className="font-medium">Province:</span>{' '}
-                          {profile.province}
-                        </p>
-                      )}
                       {profile?.postalCode && (
                         <p className="text-base">
                           <span className="font-medium">Postal Code:</span>{' '}
                           {profile.postalCode}
-                        </p>
-                      )}
-                      {profile?.country && (
-                        <p className="text-base">
-                          <span className="font-medium">Country:</span>{' '}
-                          {profile.country}
                         </p>
                       )}
                     </div>

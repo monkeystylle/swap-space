@@ -25,7 +25,8 @@ const createProfileSchema = z.object({
     .max(100, 'Given name must be less than 100 characters'),
   middleInitial: z
     .string()
-    .max(5, 'Middle initial must be less than 5 characters')
+    .max(1, 'Middle initial must be 1 character only')
+    .regex(/^[A-Za-z]?$/, 'Middle initial must be a single letter')
     .optional()
     .or(z.literal('')),
   street: z
@@ -36,18 +37,11 @@ const createProfileSchema = z.object({
     .string()
     .min(1, 'City is required')
     .max(100, 'City must be less than 100 characters'),
-  province: z
-    .string()
-    .min(1, 'Province is required')
-    .max(100, 'Province must be less than 100 characters'),
   postalCode: z
     .string()
-    .min(1, 'Postal code is required')
-    .max(20, 'Postal code must be less than 20 characters'),
-  country: z
-    .string()
-    .max(100, 'Country must be less than 100 characters')
-    .optional(),
+    .min(4, 'Postal code must be exactly 4 digits')
+    .max(4, 'Postal code must be exactly 4 digits')
+    .regex(/^\d{4}$/, 'Postal code must be exactly 4 digits'),
 });
 
 type CreateProfileFormValues = z.infer<typeof createProfileSchema>;
@@ -80,7 +74,6 @@ export const createProfile = async (
       validatedData.givenName &&
       validatedData.street &&
       validatedData.city &&
-      validatedData.province &&
       validatedData.postalCode
     );
 
@@ -92,9 +85,7 @@ export const createProfile = async (
         middleInitial: validatedData.middleInitial?.trim() || null,
         street: validatedData.street,
         city: validatedData.city,
-        province: validatedData.province,
         postalCode: validatedData.postalCode,
-        country: validatedData.country || 'Philippines',
         isComplete,
         userId: user.id,
       },

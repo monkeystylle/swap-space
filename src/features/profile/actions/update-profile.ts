@@ -27,7 +27,8 @@ const updateProfileSchema = z.object({
     .optional(),
   middleInitial: z
     .string()
-    .max(5, 'Middle initial must be less than 5 characters')
+    .max(1, 'Middle initial must be 1 character only')
+    .regex(/^[A-Za-z]?$/, 'Middle initial must be a single letter')
     .optional()
     .or(z.literal('')),
   street: z
@@ -40,19 +41,11 @@ const updateProfileSchema = z.object({
     .min(1, 'City is required')
     .max(100, 'City must be less than 100 characters')
     .optional(),
-  province: z
-    .string()
-    .min(1, 'Province is required')
-    .max(100, 'Province must be less than 100 characters')
-    .optional(),
   postalCode: z
     .string()
-    .min(1, 'Postal code is required')
-    .max(20, 'Postal code must be less than 20 characters')
-    .optional(),
-  country: z
-    .string()
-    .max(100, 'Country must be less than 100 characters')
+    .min(4, 'Postal code must be exactly 4 digits')
+    .max(4, 'Postal code must be exactly 4 digits')
+    .regex(/^\d{4}$/, 'Postal code must be exactly 4 digits')
     .optional(),
 });
 
@@ -87,9 +80,7 @@ export const updateProfile = async (
       middleInitial: string | null;
       street: string;
       city: string;
-      province: string;
       postalCode: string;
-      country: string;
       isComplete: boolean;
     }> = {};
 
@@ -104,12 +95,8 @@ export const updateProfile = async (
     if (validatedData.street !== undefined)
       updateData.street = validatedData.street;
     if (validatedData.city !== undefined) updateData.city = validatedData.city;
-    if (validatedData.province !== undefined)
-      updateData.province = validatedData.province;
     if (validatedData.postalCode !== undefined)
       updateData.postalCode = validatedData.postalCode;
-    if (validatedData.country !== undefined)
-      updateData.country = validatedData.country;
 
     // Calculate profile completion after update
     const updatedProfile = { ...currentProfile, ...updateData };
@@ -119,7 +106,6 @@ export const updateProfile = async (
       updatedProfile.givenName &&
       updatedProfile.street &&
       updatedProfile.city &&
-      updatedProfile.province &&
       updatedProfile.postalCode
     );
 
