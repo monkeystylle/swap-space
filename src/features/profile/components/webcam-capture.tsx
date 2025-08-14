@@ -6,22 +6,22 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Camera, X, Check } from 'lucide-react';
+import { Camera, X, Check, AlertCircle } from 'lucide-react';
 import Webcam from 'react-webcam';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-// MediaPipe imports
-import { FaceDetection } from '@mediapipe/face_detection';
+// MediaPipe Tasks Vision API
+import { FaceDetector, FilesetResolver } from '@mediapipe/tasks-vision';
+
+// MediaPipe Detection types are provided by the library
+// No need for custom interface - using Detection directly
 
 interface WebcamCaptureProps {
   onCapture: (imageFile: File) => void;
   onClose: () => void;
   isUploading?: boolean;
 }
-
-// MediaPipe Face Detection result types
-// Using unknown to avoid type conflicts with MediaPipe's own types
 
 export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
   onCapture,
@@ -30,12 +30,16 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
 }) => {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const faceDetectionRef = useRef<FaceDetection | null>(null);
+  const faceDetectorRef = useRef<FaceDetector | null>(null);
+  const animationIdRef = useRef<number | null>(null);
 
   const [faceDetected, setFaceDetected] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [initializationFailed, setInitializationFailed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Video constraints for better face detection
   const videoConstraints = {
@@ -44,126 +48,171 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
     facingMode: 'user',
   };
 
+  // Retry face detection initialization
+  const retryInitialization = useCallback(() => {
+    setError('');
+    setInitializationFailed(false);
+    setIsInitialized(false);
+    setIsLoading(true);
+    setRetryCount(prev => prev + 1);
+  }, []);
+
   // Initialize MediaPipe Face Detection
   useEffect(() => {
     const initializeFaceDetection = async () => {
+      setIsLoading(true);
+
       try {
-        const faceDetection = new FaceDetection({
-          locateFile: file => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
+        // Initialize MediaPipe Vision Tasks
+        const vision = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm'
+        );
+
+        // Create FaceDetector instance
+        const faceDetector = await FaceDetector.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite`,
+            delegate: 'GPU',
           },
-        });
-
-        await faceDetection.setOptions({
-          model: 'short',
+          runningMode: 'VIDEO',
           minDetectionConfidence: 0.5,
         });
 
-        faceDetection.setOptions({
-          model: 'short',
-          minDetectionConfidence: 0.5,
-        });
-
-        faceDetection.onResults((results: unknown) => {
-          const canvas = canvasRef.current;
-          const res = results as {
-            detections?: Array<{
-              score: number;
-              locationData: {
-                relativeBoundingBox: {
-                  xMin: number;
-                  yMin: number;
-                  width: number;
-                  height: number;
-                };
-              };
-            }>;
-          };
-
-          if (canvas && res.detections) {
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              // Clear canvas
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-              // Check if face is detected with good confidence
-              const validFace = res.detections.some(
-                detection => detection.score > 0.7
-              );
-
-              setFaceDetected(validFace);
-
-              // Draw face detection boxes (optional - for debugging)
-              if (validFace) {
-                ctx.strokeStyle = '#00ff00';
-                ctx.lineWidth = 3;
-
-                res.detections.forEach(detection => {
-                  if (detection.score > 0.7) {
-                    const bbox = detection.locationData.relativeBoundingBox;
-                    ctx.strokeRect(
-                      bbox.xMin * canvas.width,
-                      bbox.yMin * canvas.height,
-                      bbox.width * canvas.width,
-                      bbox.height * canvas.height
-                    );
-                  }
-                });
-              }
-            }
-          } else {
-            setFaceDetected(false);
-          }
-        });
-
-        faceDetectionRef.current = faceDetection;
+        faceDetectorRef.current = faceDetector;
         setIsInitialized(true);
+        setInitializationFailed(false);
+        setIsLoading(false);
+        setError('');
       } catch (err) {
         console.error('Failed to initialize face detection:', err);
-        setError(
-          'Failed to initialize face detection. You can still capture without face validation.'
-        );
-        setIsInitialized(true); // Allow capture even if face detection fails
+        const errorMessage =
+          retryCount < 2
+            ? 'Face detection failed to load. This may be due to network issues.'
+            : 'Face detection initialization failed after multiple attempts. Please check your internet connection.';
+
+        setError(errorMessage);
+        setInitializationFailed(true);
+        setIsInitialized(false);
+        setIsLoading(false);
       }
     };
 
     initializeFaceDetection();
 
     return () => {
-      if (faceDetectionRef.current) {
-        faceDetectionRef.current.close();
+      // Clean up animation frame and face detector
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current);
       }
-      // Note: cameraRef cleanup removed to fix React hooks warning
+      if (faceDetectorRef.current) {
+        faceDetectorRef.current.close();
+      }
     };
-  }, []);
+  }, [retryCount]);
 
   // Process webcam frames for face detection
   useEffect(() => {
-    if (!isInitialized || !faceDetectionRef.current) return;
+    if (!isInitialized || !faceDetectorRef.current) return;
 
     const processFrame = () => {
       const video = webcamRef.current?.video;
       const canvas = canvasRef.current;
 
-      if (video && canvas && video.readyState === 4) {
+      if (
+        video &&
+        canvas &&
+        video.readyState === 4 &&
+        faceDetectorRef.current
+      ) {
         // Set canvas size to match video
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
-        // Send frame to MediaPipe
-        if (faceDetectionRef.current) {
-          faceDetectionRef.current.send({ image: video });
+        try {
+          // Use detectForVideo with timestamp
+          const startTimeMs = performance.now();
+          const detectionResult = faceDetectorRef.current.detectForVideo(
+            video,
+            startTimeMs
+          );
+
+          // Clear canvas first
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+
+          // Check if face is detected with good confidence
+          if (
+            detectionResult.detections &&
+            detectionResult.detections.length > 0
+          ) {
+            const validFace = detectionResult.detections.some(
+              detection => detection.categories[0].score > 0.7
+            );
+
+            setFaceDetected(validFace);
+
+            // Draw face detection boxes
+            if (validFace && ctx) {
+              // Set up drawing style for face detection boxes
+              ctx.strokeStyle = '#00ff00'; // Green color
+              ctx.lineWidth = 3;
+              ctx.fillStyle = 'rgba(0, 255, 0, 0.1)'; // Semi-transparent green fill
+
+              detectionResult.detections.forEach(detection => {
+                if (
+                  detection.categories[0].score > 0.7 &&
+                  detection.boundingBox
+                ) {
+                  const bbox = detection.boundingBox;
+                  const x = bbox.originX * canvas.width;
+                  const y = bbox.originY * canvas.height;
+                  const width = bbox.width * canvas.width;
+                  const height = bbox.height * canvas.height;
+
+                  // Draw filled rectangle for better visibility
+                  ctx.fillRect(x, y, width, height);
+                  ctx.strokeRect(x, y, width, height);
+
+                  // Add confidence score text
+                  ctx.fillStyle = '#00ff00';
+                  ctx.font = '14px Arial';
+                  ctx.fillText(
+                    `Face: ${Math.round(detection.categories[0].score * 100)}%`,
+                    x,
+                    y - 5
+                  );
+                  ctx.fillStyle = 'rgba(0, 255, 0, 0.1)'; // Reset fill style
+                }
+              });
+            }
+          } else {
+            setFaceDetected(false);
+          }
+        } catch (error) {
+          console.error('Face detection error:', error);
+          // Don't set face as detected on error
+          setFaceDetected(false);
         }
       }
+
+      // Schedule next frame
+      animationIdRef.current = requestAnimationFrame(processFrame);
     };
 
-    // Process frames at regular intervals
-    const intervalId = setInterval(processFrame, 100); // 10 FPS
+    // Start processing frames
+    animationIdRef.current = requestAnimationFrame(processFrame);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current);
+      }
+    };
   }, [isInitialized]);
 
-  // Capture photo from webcam
+  // Capture photo from webcam function
+  //Uses react-webcam's built-in screenshot feature
   const capturePhoto = useCallback(() => {
     const webcam = webcamRef.current;
     if (!webcam) return;
@@ -275,15 +324,55 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
             </Button>
           </div>
 
-          {/* Instructions */}
+          {/* Status and Instructions */}
           <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Position your face within the camera frame
-            </p>
-            {error && (
-              <p className="text-sm text-amber-600 dark:text-amber-400">
-                {error}
-              </p>
+            {/* Loading State */}
+            {isLoading && (
+              <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-blue-600 dark:border-blue-400"></div>
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  Loading face detection...
+                </p>
+              </div>
+            )}
+
+            {/* Initialization Failed */}
+            {initializationFailed && !isLoading && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  <div className="text-sm text-red-600 dark:text-red-400">
+                    <p className="font-medium">Face Detection Failed</p>
+                    <p>{error}</p>
+                  </div>
+                </div>
+                {retryCount < 2 && (
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={retryInitialization}
+                      className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
+                    >
+                      Try Again
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Normal Instructions (only show when face detection is working) */}
+            {isInitialized && !initializationFailed && !isLoading && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Position your face within the camera frame
+                </p>
+                {!faceDetected && (
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                    Please center your face in the camera view
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
@@ -302,7 +391,7 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
               <canvas
                 ref={canvasRef}
                 className="absolute inset-0 w-full h-full pointer-events-none"
-                style={{ mixBlendMode: 'multiply' }}
+                style={{ mixBlendMode: 'normal' }}
               />
 
               {/* Face detection indicator */}
@@ -325,18 +414,25 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
             <Button
               type="button"
               onClick={capturePhoto}
-              disabled={!faceDetected && !error}
+              disabled={!faceDetected || initializationFailed || isLoading}
               size="lg"
               className="px-8"
             >
               <Camera className="mr-2 h-5 w-5" />
-              Take Photo
+              {isLoading
+                ? 'Loading...'
+                : initializationFailed
+                  ? 'Face Detection Failed'
+                  : faceDetected
+                    ? 'Take Photo'
+                    : 'Position Face to Take Photo'}
             </Button>
           </div>
 
-          {!faceDetected && !error && (
-            <p className="text-center text-sm text-muted-foreground">
-              Please position your face in the camera to enable capture
+          {/* Additional context messages */}
+          {faceDetected && isInitialized && !initializationFailed && (
+            <p className="text-center text-sm text-green-600 dark:text-green-400">
+              ✓ Face detected! You can now take your photo
             </p>
           )}
         </div>

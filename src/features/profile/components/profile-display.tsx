@@ -69,13 +69,18 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
           <div className="flex flex-col items-center space-y-4">
             {/* Profile Picture */}
             <div className="relative">
-              {profile?.profilePictureSecureUrl ? (
+              {updatePictureMutation.isPending ? (
+                <div className="w-30 h-30 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-background shadow-lg">
+                  <div className="w-8 h-8 animate-spin rounded-full border-b-2 border-primary"></div>
+                </div>
+              ) : profile?.profilePictureSecureUrl ? (
                 <Image
-                  src={profile.profilePictureSecureUrl}
+                  src={`${profile.profilePictureSecureUrl}?v=${Date.now()}`}
                   alt="Profile picture"
                   width={120}
                   height={120}
                   className="rounded-full object-cover border-4 border-background shadow-lg"
+                  key={profile.profilePictureSecureUrl} // Force re-render when URL changes
                 />
               ) : (
                 <div className="w-30 h-30 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-background shadow-lg">

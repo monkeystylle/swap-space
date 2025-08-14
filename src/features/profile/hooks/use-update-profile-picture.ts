@@ -34,6 +34,8 @@ export const useUpdateProfilePicture = (userId: string) => {
     onSettled: () => {
       // Refetch profile data after mutation to get the updated image URL from Cloudinary
       queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+      // Also invalidate any related profile queries
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
 };
