@@ -39,6 +39,7 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
   const [error, setError] = useState<string>('');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [isRetaking, setIsRetaking] = useState(false);
 
   // Video constraints for better face detection
   const videoConstraints = {
@@ -199,188 +200,219 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
   const retakePhoto = useCallback(() => {
     setCapturedImage(null);
     setFaceDetected(false);
+    setIsRetaking(true);
+
+    // Reset retaking state after a short delay to allow camera to settle
+    setTimeout(() => {
+      setIsRetaking(false);
+    }, 1000);
   }, []);
 
   if (capturedImage) {
     return (
-      <Card className="w-full max-w-lg mx-auto">
+      <div className="w-full max-w-lg mx-auto">
+        <Card className="w-full">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {/* Header - Same height as webcam UI header */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Preview</h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  disabled={isUploading}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Instructions area - Same height as webcam UI status area */}
+              <div className="text-center">
+                <div className="h-16 flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground">
+                    Is this photo okay for your profile?
+                  </p>
+                </div>
+              </div>
+
+              {/* Image - Same aspect ratio as webcam */}
+              <div className="relative">
+                <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={capturedImage}
+                    alt="Captured profile"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Button area - Same structure as webcam UI */}
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={retakePhoto}
+                  disabled={isUploading}
+                  className="flex-1"
+                  size="lg"
+                >
+                  Retake
+                </Button>
+                <Button
+                  type="button"
+                  onClick={confirmCapture}
+                  disabled={isUploading}
+                  className="flex-1"
+                  size="lg"
+                >
+                  {isUploading ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Use This Photo
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-lg mx-auto">
+      <Card className="w-full">
         <CardContent className="p-6">
           <div className="space-y-4">
+            {/* Header - Same as preview UI */}
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Take Profile Picture</h3>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                disabled={isUploading}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Status and Instructions - Fixed height to prevent layout shift */}
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Preview</h3>
-              <p className="text-sm text-muted-foreground">
-                Is this photo okay for your profile?
-              </p>
+              <div className="h-16 flex items-center justify-center">
+                {/* Loading State (initialization or retaking) */}
+                {(isLoading || isRetaking) && (
+                  <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-blue-600 dark:border-blue-400"></div>
+                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                      {isRetaking
+                        ? 'Preparing camera...'
+                        : 'Loading face detection...'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Initialization Failed */}
+                {initializationFailed && !isLoading && !isRetaking && (
+                  <div className="w-full space-y-3">
+                    <div className="flex items-center justify-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      <div className="text-sm text-red-600 dark:text-red-400">
+                        <p className="font-medium">Face Detection Failed</p>
+                        <p>{error}</p>
+                      </div>
+                    </div>
+                    {retryCount < 2 && (
+                      <div className="flex justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={retryInitialization}
+                          className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
+                        >
+                          Try Again
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Instructions when camera is ready and no face detected */}
+                {isInitialized &&
+                  !initializationFailed &&
+                  !isLoading &&
+                  !isRetaking &&
+                  !faceDetected && (
+                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                      Please position your face in the camera view
+                    </p>
+                  )}
+              </div>
             </div>
 
+            {/* Webcam Area - Same structure as preview image */}
             <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={capturedImage}
-                alt="Captured profile"
-                className="w-full h-64 object-cover rounded-lg border"
-              />
+              <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden relative">
+                <Webcam
+                  ref={webcamRef}
+                  audio={false}
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={videoConstraints}
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Face detection indicator */}
+                <div className="absolute top-2 right-2">
+                  <div
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      faceDetected
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white'
+                    }`}
+                  >
+                    {faceDetected ? 'Face Detected' : 'No Face Detected'}
+                  </div>
+                </div>
+              </div>
             </div>
 
+            {/* Capture Button - Same structure as preview buttons to prevent layout shift */}
             <div className="flex gap-3">
               <Button
                 type="button"
-                variant="outline"
-                onClick={retakePhoto}
-                disabled={isUploading}
-                className="flex-1"
+                onClick={capturePhoto}
+                disabled={
+                  !faceDetected ||
+                  initializationFailed ||
+                  isLoading ||
+                  isRetaking
+                }
+                size="lg"
+                className="w-full cursor-pointer"
               >
-                Retake
-              </Button>
-              <Button
-                type="button"
-                onClick={confirmCapture}
-                disabled={isUploading}
-                className="flex-1"
-              >
-                {isUploading ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Check className="mr-2 h-4 w-4" />
-                    Use This Photo
-                  </>
-                )}
+                <Camera className="mr-2 h-5 w-5" />
+                {isLoading || isRetaking
+                  ? 'Loading...'
+                  : initializationFailed
+                    ? 'Face Detection Failed'
+                    : faceDetected
+                      ? 'Take Photo'
+                      : 'Take Photo'}
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
-    );
-  }
-
-  return (
-    <Card className="w-full max-w-lg mx-auto">
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Take Profile Picture</h3>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              disabled={isUploading}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Status and Instructions */}
-          <div className="text-center space-y-2">
-            {/* Loading State */}
-            {isLoading && (
-              <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-blue-600 dark:border-blue-400"></div>
-                <p className="text-sm text-blue-600 dark:text-blue-400">
-                  Loading face detection...
-                </p>
-              </div>
-            )}
-
-            {/* Initialization Failed */}
-            {initializationFailed && !isLoading && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-                  <div className="text-sm text-red-600 dark:text-red-400">
-                    <p className="font-medium">Face Detection Failed</p>
-                    <p>{error}</p>
-                  </div>
-                </div>
-                {retryCount < 2 && (
-                  <div className="flex justify-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={retryInitialization}
-                      className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
-                    >
-                      Try Again
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Normal Instructions (only show when face detection is working) */}
-            {isInitialized && !initializationFailed && !isLoading && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Position your face within the camera frame
-                </p>
-                {!faceDetected && (
-                  <p className="text-sm text-amber-600 dark:text-amber-400">
-                    Please center your face in the camera view
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Webcam Area */}
-          <div className="relative">
-            <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden relative">
-              <Webcam
-                ref={webcamRef}
-                audio={false}
-                screenshotFormat="image/jpeg"
-                videoConstraints={videoConstraints}
-                className="w-full h-full object-cover"
-              />
-
-              {/* Face detection indicator */}
-              <div className="absolute top-2 right-2">
-                <div
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    faceDetected
-                      ? 'bg-green-500 text-white'
-                      : 'bg-red-500 text-white'
-                  }`}
-                >
-                  {faceDetected ? 'Face Detected' : 'No Face Detected'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Capture Button */}
-          <div className="flex justify-center">
-            <Button
-              type="button"
-              onClick={capturePhoto}
-              disabled={!faceDetected || initializationFailed || isLoading}
-              size="lg"
-              className="px-8"
-            >
-              <Camera className="mr-2 h-5 w-5" />
-              {isLoading
-                ? 'Loading...'
-                : initializationFailed
-                  ? 'Face Detection Failed'
-                  : faceDetected
-                    ? 'Take Photo'
-                    : 'Position Face to Take Photo'}
-            </Button>
-          </div>
-
-          {/* Additional context messages */}
-          {faceDetected && isInitialized && !initializationFailed && (
-            <p className="text-center text-sm text-green-600 dark:text-green-400">
-              ✓ Face detected! You can now take your photo
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 };
