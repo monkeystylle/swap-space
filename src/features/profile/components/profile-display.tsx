@@ -77,8 +77,8 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
                 <Image
                   src={`${profile.profilePictureSecureUrl}?v=${Date.now()}`}
                   alt="Profile picture"
-                  width={120}
-                  height={120}
+                  width={240}
+                  height={240}
                   className="rounded-full object-cover border-4 border-background shadow-lg"
                   key={profile.profilePictureSecureUrl} // Force re-render when URL changes
                 />
