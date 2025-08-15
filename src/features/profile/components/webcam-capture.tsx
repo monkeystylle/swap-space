@@ -29,7 +29,6 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
   isUploading = false,
 }) => {
   const webcamRef = useRef<Webcam>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const faceDetectorRef = useRef<FaceDetector | null>(null);
   const animationIdRef = useRef<number | null>(null);
 
@@ -116,18 +115,8 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
 
     const processFrame = () => {
       const video = webcamRef.current?.video;
-      const canvas = canvasRef.current;
 
-      if (
-        video &&
-        canvas &&
-        video.readyState === 4 &&
-        faceDetectorRef.current
-      ) {
-        // Set canvas size to match video
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
+      if (video && video.readyState === 4 && faceDetectorRef.current) {
         try {
           // Use detectForVideo with timestamp
           const startTimeMs = performance.now();
@@ -136,57 +125,19 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
             startTimeMs
           );
 
-          // Clear canvas first
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-          }
-
           // Check if face is detected with good confidence
           if (
             detectionResult.detections &&
             detectionResult.detections.length > 0
           ) {
             const validFace = detectionResult.detections.some(
-              detection => detection.categories[0].score > 0.7
+              detection => detection.categories[0].score > 0.8
             );
 
             setFaceDetected(validFace);
 
-            // Draw face detection boxes
-            if (validFace && ctx) {
-              // Set up drawing style for face detection boxes
-              ctx.strokeStyle = '#00ff00'; // Green color
-              ctx.lineWidth = 3;
-              ctx.fillStyle = 'rgba(0, 255, 0, 0.1)'; // Semi-transparent green fill
-
-              detectionResult.detections.forEach(detection => {
-                if (
-                  detection.categories[0].score > 0.7 &&
-                  detection.boundingBox
-                ) {
-                  const bbox = detection.boundingBox;
-                  const x = bbox.originX * canvas.width;
-                  const y = bbox.originY * canvas.height;
-                  const width = bbox.width * canvas.width;
-                  const height = bbox.height * canvas.height;
-
-                  // Draw filled rectangle for better visibility
-                  ctx.fillRect(x, y, width, height);
-                  ctx.strokeRect(x, y, width, height);
-
-                  // Add confidence score text
-                  ctx.fillStyle = '#00ff00';
-                  ctx.font = '14px Arial';
-                  ctx.fillText(
-                    `Face: ${Math.round(detection.categories[0].score * 100)}%`,
-                    x,
-                    y - 5
-                  );
-                  ctx.fillStyle = 'rgba(0, 255, 0, 0.1)'; // Reset fill style
-                }
-              });
-            }
+            // Face detection visual overlay removed for cleaner UX
+            // Face detection still works - feedback provided by indicator only
           } else {
             setFaceDetected(false);
           }
@@ -385,13 +336,6 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
                 screenshotFormat="image/jpeg"
                 videoConstraints={videoConstraints}
                 className="w-full h-full object-cover"
-              />
-
-              {/* Overlay canvas for face detection visualization */}
-              <canvas
-                ref={canvasRef}
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                style={{ mixBlendMode: 'normal' }}
               />
 
               {/* Face detection indicator */}
