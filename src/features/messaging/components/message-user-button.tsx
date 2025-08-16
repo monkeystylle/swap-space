@@ -111,9 +111,7 @@ export const MessageUserButton = ({
       ) : (
         <MessageCircle className="w-4 h-4" />
       )}
-      {createConversationMutation.isPending
-        ? 'Starting...'
-        : `Message ${username}`}
+      {createConversationMutation.isPending ? 'Starting...' : 'Message'}
     </Button>
   );
 };
