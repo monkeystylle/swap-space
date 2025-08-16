@@ -50,7 +50,11 @@ const WallPage = async ({ params }: WallPageProps) => {
                 <Link
                   href={isOwner ? '/account/profile' : `/profile/${userid}`}
                 >
-                  <Button variant="outline" size="sm">
+                  <Button
+                    className="cursor-pointer"
+                    variant="outline"
+                    size="sm"
+                  >
                     <User className="w-4 h-4 mr-2" />
                     {isOwner ? 'My Profile' : 'View Profile'}
                   </Button>

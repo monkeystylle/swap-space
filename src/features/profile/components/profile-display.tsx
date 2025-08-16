@@ -70,7 +70,7 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
             {/* Profile Picture */}
             <div className="relative">
               {updatePictureMutation.isPending ? (
-                <div className="w-30 h-30 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-background shadow-lg">
+                <div className="w-60 h-60 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-background shadow-lg">
                   <div className="w-8 h-8 animate-spin rounded-full border-b-2 border-primary"></div>
                 </div>
               ) : profile?.profilePictureSecureUrl ? (
@@ -83,8 +83,8 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
                   key={profile.profilePictureSecureUrl} // Force re-render when URL changes
                 />
               ) : (
-                <div className="w-30 h-30 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-background shadow-lg">
-                  <User className="w-12 h-12 text-gray-400" />
+                <div className="w-60 h-60 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-background shadow-lg">
+                  <User className="w-24 h-24 text-gray-400" />
                 </div>
               )}
 
@@ -92,11 +92,11 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
               {isOwner && (
                 <Button
                   size="sm"
-                  className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
+                  className="cursor-pointer absolute -bottom-1 -right-1 rounded-full w-12 h-12 p-0 shadow-lg border-2 border-background"
                   onClick={() => setShowWebcam(true)}
                   disabled={updatePictureMutation.isPending}
                 >
-                  <Camera className="w-4 h-4" />
+                  <Camera className="size-6" />
                 </Button>
               )}
             </div>
@@ -266,7 +266,7 @@ const ProfileSkeleton: React.FC = () => {
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col items-center space-y-4">
-            <Skeleton className="w-30 h-30 rounded-full" />
+            <Skeleton className="w-60 h-60 rounded-full" />
             <Skeleton className="w-48 h-4" />
           </div>
         </CardContent>
