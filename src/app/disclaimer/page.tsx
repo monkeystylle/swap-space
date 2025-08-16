@@ -58,6 +58,61 @@ export default function DisclaimerPage() {
 
           <section>
             <h2 className="text-2xl font-semibold text-foreground mb-4">
+              Legal Disclaimer - Philippines
+            </h2>
+            <p className="text-foreground leading-relaxed">
+              In the Philippines, there is no specific law that outright
+              prohibits bartering (the exchange of goods or services without
+              using money). Bartering is generally allowed and is a traditional
+              practice in many communities, especially in rural areas.
+            </p>
+            <p className="text-foreground leading-relaxed">
+              However, there are certain regulations and tax implications that
+              may apply to bartering, depending on the context:
+            </p>
+            <ul className="list-disc pl-6 space-y-3 text-foreground">
+              <li>
+                <strong>Tax Implications</strong> – The Bureau of Internal
+                Revenue (BIR) considers barter transactions as taxable if they
+                involve business-related exchanges. The fair market value of the
+                goods or services exchanged may be subject to income tax,
+                value-added tax (VAT), or other applicable taxes under the
+                National Internal Revenue Code (Tax Reform Act of 1997).
+              </li>
+              <li>
+                <strong>Business Regulations</strong> – If bartering is
+                conducted as part of a business operation, it may need to comply
+                with local business permits and registration requirements under
+                the Philippine Business Laws.
+              </li>
+              <li>
+                <strong>Cross-Border Bartering</strong> – International barter
+                trade (e.g., between the Philippines and other countries) may be
+                subject to customs regulations under the Customs Modernization
+                and Tariff Act (CMTA).
+              </li>
+              <li>
+                <strong>Local Ordinances</strong> – Some local government units
+                (LGUs) may have specific rules on bartering, especially in
+                public markets or during special events.
+              </li>
+            </ul>
+            <div className="bg-muted/30 p-4 rounded-lg border mt-4">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Special Case: Barter Trade in Sulu and Tawi-Tawi
+              </h3>
+              <p className="text-foreground text-sm leading-relaxed">
+                Historically, barter trade has been a significant economic
+                activity in the southern Philippines (particularly between
+                Sulu/Tawi-Tawi and neighboring countries like Malaysia and
+                Indonesia). The government regulates this through the Mindanao
+                Barter Council to ensure legality and prevent smuggling.
+              </p>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-foreground mb-4">
               Limitation of Liability
             </h2>
             <p className="text-foreground leading-relaxed">
