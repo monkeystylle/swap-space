@@ -45,7 +45,7 @@ const ProfilePage = async ({ params }: ProfilePageProps) => {
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             {isOwner
               ? 'Manage your personal information and profile picture'
-              : `View ${displayName}'s profile information`}
+              : ` ${displayName}'s profile information`}
           </p>
         </div>
 
