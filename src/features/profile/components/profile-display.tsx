@@ -7,7 +7,14 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Edit2, Camera, User, MapPin, CheckCircle } from 'lucide-react';
+import {
+  Edit2,
+  Camera,
+  User,
+  MapPin,
+  CheckCircle,
+  FileText,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -158,7 +165,7 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
                   {/* Name Section */}
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <User className="w-4 h-4" />
+                      <FileText className="w-4 h-4" />
                       Personal Information
                     </h4>
                     <div className="space-y-1 pl-6">
@@ -206,7 +213,7 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
               ) : (
                 // Empty State
                 <div className="text-center py-8 space-y-4">
-                  <User className="w-12 h-12 text-gray-400 mx-auto" />
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto" />
                   <div className="space-y-2">
                     <h4 className="text-base font-medium">
                       No Profile Information
@@ -217,43 +224,12 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
                         : 'This user has not added their profile information yet'}
                     </p>
                   </div>
-                  {isOwner && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setEditingDetails(true)}
-                    >
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Add Profile Information
-                    </Button>
-                  )}
                 </div>
               )}
             </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Create Profile Form for New Users */}
-      {!profile && isOwner && !editingDetails && (
-        <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Create Your Profile</h3>
-              <p className="text-sm text-muted-foreground">
-                Add your personal information to complete your profile setup.
-              </p>
-              <ProfileForm
-                userId={userId}
-                profile={null}
-                onSuccess={() => {
-                  // Profile created successfully
-                }}
-                isEditing={false}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
