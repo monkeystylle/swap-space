@@ -121,19 +121,19 @@ const SignInForm = () => {
       </Form>
 
       {/* Separator */}
-      <div className="flex items-center">
+      {/* <div className="flex items-center">
         <Separator className="flex-1" />
         <span className="px-3 text-sm text-muted-foreground">OR</span>
         <Separator className="flex-1" />
-      </div>
+      </div> */}
 
       {/* Google Sign In Button */}
-      <Button variant="outline" className="w-full" asChild>
+      {/* <Button variant="outline" className="w-full" asChild>
         <a href="/api/login/google" className="flex items-center gap-2">
           <GoogleIcon />
           Sign in with Google
         </a>
-      </Button>
+      </Button> */}
     </div>
   );
 };
