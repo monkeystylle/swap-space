@@ -29,10 +29,14 @@ model User {
   username     String       @unique
   email        String       @unique
   passwordHash String   
+  phoneNumber  String?      @unique // Philippine mobile number
+  phoneVerified Boolean     @default(false) // Whether phone is verified
   googleId     String?      @unique // Add this for Google OAuth
   sessions     Session[]
   postedItems  PostedItem[] // Add this relationship
   offers       Offer[]      // Add this relationship
+  otpVerifications OtpVerification[] // Add this relationship
+  profile      Profile?     // Add this relationship
   
   // Messaging relationships
   sentMessages       Message[]                @relation("MessageSender")
@@ -157,5 +161,57 @@ model Notification {
   @@index([userId])
   @@index([isRead])
   @@index([createdAt])
+}
+
+// OTP Verification model for SMS verification
+model OtpVerification {
+  id          String   @id @default(cuid())
+  phoneNumber String   // The phone number being verified
+  code        String   // The OTP code sent
+  expiresAt   DateTime // When the OTP expires (typically 5-10 minutes)
+  verified    Boolean  @default(false) // Whether this OTP was successfully verified
+  attempts    Int      @default(0) // Number of verification attempts
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Optional user reference for tracking
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([phoneNumber])
+  @@index([code])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+// Profile model for user profile information
+model Profile {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Profile picture from webcam capture
+  profilePicturePublicId  String?  // Cloudinary public_id for the profile picture
+  profilePictureSecureUrl String?  // Cloudinary secure_url for the profile picture
+  
+  // Name details
+  surname      String?  @db.VarChar(100)
+  givenName    String?  @db.VarChar(100)
+  middleInitial String? @db.VarChar(1) // Just the initial - one character only
+  
+  // Address details
+  street       String?  @db.VarChar(200)
+  city         String?  @db.VarChar(100)
+  postalCode   String?  @db.VarChar(4) // Philippine postal codes are exactly 4 digits
+  
+  // Profile completion tracking
+  isComplete   Boolean  @default(false) // Auto-calculated based on required fields
+  
+  // User relationship
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String   @unique
+  
+  @@index([userId])
+  @@index([isComplete])
 }
 

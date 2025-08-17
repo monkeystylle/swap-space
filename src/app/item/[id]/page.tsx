@@ -37,6 +37,13 @@ const ItemPage = async ({ params }: ItemPageProps) => {
           id: true,
           username: true,
           email: true,
+          profile: {
+            select: {
+              id: true,
+              profilePictureSecureUrl: true,
+              profilePicturePublicId: true,
+            },
+          },
         },
       },
       offers: {
@@ -78,10 +85,14 @@ const ItemPage = async ({ params }: ItemPageProps) => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Posted Item</h1>
-        <PostedItemCard postedItem={postedItemWithDetails} />
+    <div className="container-custom">
+      <div className="max-w-4xl mx-auto py-4 sm:py-6 md:py-8">
+        <div className="px-4 space-y-4 sm:space-y-6">
+          <h1 className="text-xl sm:text-2xl font-bold">Posted Item</h1>
+          <div className="max-w-2xl">
+            <PostedItemCard postedItem={postedItemWithDetails} />
+          </div>
+        </div>
       </div>
     </div>
   );

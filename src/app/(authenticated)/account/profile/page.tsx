@@ -1,33 +1,33 @@
-import Image from 'next/image';
-import Link from 'next/link';
+import { getAuth } from '@/features/auth/queries/get-auth';
+import { ProfileDisplay } from '@/features/profile/components/profile-display';
+import { redirect } from 'next/navigation';
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const auth = await getAuth();
+
+  if (!auth.user) {
+    redirect('/auth/login');
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-background text-foreground">
-      <div className="text-center">
-        <div className="mb-8">
-          <Image
-            src="https://res.cloudinary.com/depjz6qgl/image/upload/v1754076783/robot_qaz7he.svg"
-            alt="Robot under construction"
-            width={200}
-            height={200}
-            className="mx-auto"
-            priority={true}
-          />
+    <div className="container-custom">
+      <div className="max-w-4xl mx-auto py-4 sm:py-6">
+        <div className="px-4 space-y-4 sm:space-y-6">
+          {/* Page Header */}
+          <div className="text-center sm:text-left">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              My Profile
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+              Manage your personal information and profile picture
+            </p>
+          </div>
+
+          {/* Profile Display */}
+          <div className="max-w-2xl mx-auto sm:mx-0">
+            <ProfileDisplay userId={auth.user.id} isOwner={true} />
+          </div>
         </div>
-        <h1 className="text-4xl font-bold text-muted-foreground">Profile</h1>
-        <h2 className="mt-4 text-2xl font-semibold">
-          This page is currently being worked on
-        </h2>
-        <p className="mt-2 text-muted-foreground">
-          We&apos;re working hard to bring you an amazing profile experience.
-        </p>
-        <Link
-          href="/"
-          className="mt-6 inline-block rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 transition-colors"
-        >
-          Go back home
-        </Link>
       </div>
     </div>
   );

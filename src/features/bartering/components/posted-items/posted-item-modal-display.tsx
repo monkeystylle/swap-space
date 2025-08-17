@@ -9,7 +9,7 @@
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
 import { PostedItemWithDetails } from '../../queries/posted-item.types';
@@ -45,6 +45,12 @@ export const PostedItemModalDisplay = ({
           {/* User Avatar */}
           <Link href={usersWallPath(postedItem.user.id)}>
             <Avatar className="h-10 w-10">
+              {postedItem.user.profile?.profilePictureSecureUrl && (
+                <AvatarImage
+                  src={postedItem.user.profile.profilePictureSecureUrl}
+                  alt={`${postedItem.user.username}'s profile picture`}
+                />
+              )}
               <AvatarFallback
                 className={`${getAvatarColor(
                   postedItem.user.id

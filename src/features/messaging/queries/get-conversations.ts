@@ -5,6 +5,11 @@ export interface ConversationWithDetails {
   otherUser: {
     id: string;
     username: string;
+    profile: {
+      id: string;
+      profilePictureSecureUrl: string | null;
+      profilePicturePublicId: string | null;
+    } | null;
   };
   lastMessage?: {
     id: string;
@@ -39,6 +44,13 @@ export const getConversations = async (
                     select: {
                       id: true,
                       username: true,
+                      profile: {
+                        select: {
+                          id: true,
+                          profilePictureSecureUrl: true,
+                          profilePicturePublicId: true,
+                        },
+                      },
                     },
                   },
                 },

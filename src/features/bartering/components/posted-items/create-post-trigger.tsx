@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,7 @@ import { useAuth } from '@/features/auth/hooks/use-auth';
 import Link from 'next/link';
 import { usersWallPath } from '@/paths';
 import { getAvatarColor } from '@/utils/avatar-colors';
+import { useProfile } from '@/features/profile/hooks/use-profile';
 
 export const CreatePostTrigger: React.FC = () => {
   // Modal state
@@ -26,6 +27,7 @@ export const CreatePostTrigger: React.FC = () => {
 
   // Get current user info
   const { user } = useAuth();
+  const { data: profile } = useProfile(user?.id || '');
 
   // Handle opening the modal
   const openModal = () => {
@@ -69,6 +71,12 @@ export const CreatePostTrigger: React.FC = () => {
           {/* User Avatar */}
           <Link href={usersWallPath(user.id)}>
             <Avatar className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity">
+              {profile?.profilePictureSecureUrl && (
+                <AvatarImage
+                  src={profile.profilePictureSecureUrl}
+                  alt={`${user.username}'s profile picture`}
+                />
+              )}
               <AvatarFallback className={`${getAvatarColor(user.id)}`}>
                 {getUserInitials(user.username)}
               </AvatarFallback>

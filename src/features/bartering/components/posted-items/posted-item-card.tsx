@@ -20,7 +20,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -297,6 +297,12 @@ export const PostedItemCard = ({
               {/* User Avatar */}
               <Link href={usersWallPath(postedItem.user.id)}>
                 <Avatar className="h-10 w-10">
+                  {postedItem.user.profile?.profilePictureSecureUrl && (
+                    <AvatarImage
+                      src={postedItem.user.profile.profilePictureSecureUrl}
+                      alt={`${postedItem.user.username}'s profile picture`}
+                    />
+                  )}
                   <AvatarFallback
                     className={`${getAvatarColor(
                       postedItem.user.id

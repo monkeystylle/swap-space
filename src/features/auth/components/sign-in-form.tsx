@@ -16,10 +16,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/password-input';
 import { signIn } from '../actions/sign-in';
 import { homePath } from '@/paths';
-import { Separator } from '@/components/ui/separator';
-import { GoogleIcon } from '@/components/ui/google-icon';
+// import { Separator } from '@/components/ui/separator';
+// import { GoogleIcon } from '@/components/ui/google-icon';
 
 const clientSignInSchema = z.object({
   email: z
@@ -106,7 +107,7 @@ const SignInForm = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••" {...field} />
+                  <PasswordInput placeholder="••••••" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -120,19 +121,19 @@ const SignInForm = () => {
       </Form>
 
       {/* Separator */}
-      <div className="flex items-center">
+      {/* <div className="flex items-center">
         <Separator className="flex-1" />
         <span className="px-3 text-sm text-muted-foreground">OR</span>
         <Separator className="flex-1" />
-      </div>
+      </div> */}
 
       {/* Google Sign In Button */}
-      <Button variant="outline" className="w-full" asChild>
+      {/* <Button variant="outline" className="w-full" asChild>
         <a href="/api/login/google" className="flex items-center gap-2">
           <GoogleIcon />
           Sign in with Google
         </a>
-      </Button>
+      </Button> */}
     </div>
   );
 };

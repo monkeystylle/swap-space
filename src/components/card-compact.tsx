@@ -24,13 +24,17 @@ const CardCompact = ({
 }: CardCompactProps) => {
   return (
     <Card className={className}>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+      <CardHeader className="pb-4 sm:pb-6">
+        <CardTitle className="text-lg sm:text-xl">{title}</CardTitle>
+        <CardDescription className="text-sm sm:text-base">
+          {description}
+        </CardDescription>
       </CardHeader>
-      <CardContent>{content}</CardContent>
+      <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">{content}</CardContent>
       {footer && (
-        <CardFooter className="flex justify-between">{footer}</CardFooter>
+        <CardFooter className="flex justify-between px-4 sm:px-6 pt-4 sm:pt-6">
+          {footer}
+        </CardFooter>
       )}
     </Card>
   );

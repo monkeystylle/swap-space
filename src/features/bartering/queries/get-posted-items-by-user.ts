@@ -42,6 +42,13 @@ export const getPostedItemsByUser = async (
             id: true,
             username: true,
             email: true,
+            profile: {
+              select: {
+                id: true,
+                profilePictureSecureUrl: true,
+                profilePicturePublicId: true,
+              },
+            },
           },
         },
         _count: {

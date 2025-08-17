@@ -31,6 +31,13 @@ export const getOffersForPostedItem = async (
             id: true,
             username: true,
             email: true,
+            profile: {
+              select: {
+                id: true,
+                profilePictureSecureUrl: true,
+                profilePicturePublicId: true,
+              },
+            },
           },
         },
       },
@@ -81,6 +88,13 @@ export const getUserOfferForPostedItem = async (
             id: true,
             username: true,
             email: true,
+            profile: {
+              select: {
+                id: true,
+                profilePictureSecureUrl: true,
+                profilePicturePublicId: true,
+              },
+            },
           },
         },
       },

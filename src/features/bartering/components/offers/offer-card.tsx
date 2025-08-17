@@ -13,7 +13,7 @@ import { MoreHorizontal, Edit, Trash2, User } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -155,6 +155,12 @@ export const OfferCard = ({ offer, onUpdate }: OfferCardProps) => {
         {/* User Avatar - Smaller */}
         <Link href={usersWallPath(offer.user.id)}>
           <Avatar className="h-8 w-8 flex-shrink-0">
+            {offer.user.profile?.profilePictureSecureUrl && (
+              <AvatarImage
+                src={offer.user.profile.profilePictureSecureUrl}
+                alt={`${offer.user.username}'s profile picture`}
+              />
+            )}
             <AvatarFallback
               className={`${getAvatarColor(
                 offer.user.id

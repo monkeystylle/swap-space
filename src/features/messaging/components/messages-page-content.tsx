@@ -13,6 +13,8 @@ import { archiveConversation } from '@/features/messaging/actions/archive-conver
 import { markMessagesAsRead } from '@/features/messaging/actions/mark-messages-read';
 import { useQueryClient } from '@tanstack/react-query';
 import { MessagesLoadingSkeleton } from './messages-loading-skeleton';
+import { MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function MessagesPageContent() {
   // Since we're in the authenticated layout, we know user exists
@@ -197,8 +199,10 @@ export function MessagesPageContent() {
 
           <Card className="flex-1 overflow-hidden min-h-0 max-h-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-0 rounded-lg shadow-2xl">
             <div className="flex h-full min-h-0 max-h-full">
-              {/* Left Sidebar - Conversation List (30%) */}
-              <div className="w-full md:w-[30%] border-r border-gray-200 dark:border-gray-700 h-full min-h-0 overflow-hidden">
+              {/* Left Sidebar - Conversation List */}
+              <div
+                className={`${selectedConversationId ? 'hidden md:block md:w-[30%]' : 'w-full md:w-[30%]'} border-r border-gray-200 dark:border-gray-700 h-full min-h-0 overflow-hidden`}
+              >
                 <ConversationList
                   conversations={conversations.map(conv => ({
                     ...conv,
@@ -216,38 +220,71 @@ export function MessagesPageContent() {
                 />
               </div>
 
-              {/* Right Side - Chat Interface (70%) */}
-              <div className="hidden md:block md:w-[70%] h-full min-h-0 overflow-hidden">
-                <ChatInterface
-                  conversationId={selectedConversationId}
-                  currentUser={
-                    user
-                      ? { id: user.id, username: user.username }
-                      : { id: '', username: '' }
-                  }
-                  otherUser={selectedOtherUser || { id: '', username: '' }}
-                  messages={messages
-                    .map(m => ({
-                      id: m.id,
-                      content: m.content,
-                      createdAt:
-                        typeof m.createdAt === 'string'
-                          ? m.createdAt
-                          : m.createdAt.toISOString(),
-                      senderId: m.senderId,
-                      senderUsername: m.senderUsername,
-                      isOptimistic: m.isOptimistic || false,
-                      isSending: m.isSending || false, // Include the new isSending flag
-                    }))
-                    .sort(
-                      (a, b) =>
-                        new Date(a.createdAt).getTime() -
-                        new Date(b.createdAt).getTime()
-                    )}
-                  onSendMessage={handleSendMessage}
-                  isLoading={messagesLoading}
-                  isSending={sendMessageMutation.isPending}
-                />
+              {/* Right Side - Chat Interface */}
+              <div
+                className={`${selectedConversationId ? 'w-full md:w-[70%]' : 'hidden md:block md:w-[70%]'} h-full min-h-0 overflow-hidden relative`}
+              >
+                {selectedConversationId && (
+                  <>
+                    {/* Back Button - Mobile Only */}
+                    <div className="md:hidden absolute top-4 left-4 z-10">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedConversationId('');
+                          setSelectedOtherUser(null);
+                        }}
+                        className="bg-background/80 backdrop-blur-sm"
+                      >
+                        ← Back to Conversations
+                      </Button>
+                    </div>
+
+                    <ChatInterface
+                      conversationId={selectedConversationId}
+                      currentUser={
+                        user
+                          ? { id: user.id, username: user.username }
+                          : { id: '', username: '' }
+                      }
+                      otherUser={selectedOtherUser || { id: '', username: '' }}
+                      messages={messages
+                        .map(m => ({
+                          id: m.id,
+                          content: m.content,
+                          createdAt:
+                            typeof m.createdAt === 'string'
+                              ? m.createdAt
+                              : m.createdAt.toISOString(),
+                          senderId: m.senderId,
+                          senderUsername: m.senderUsername,
+                          isOptimistic: m.isOptimistic || false,
+                          isSending: m.isSending || false, // Include the new isSending flag
+                        }))
+                        .sort(
+                          (a, b) =>
+                            new Date(a.createdAt).getTime() -
+                            new Date(b.createdAt).getTime()
+                        )}
+                      onSendMessage={handleSendMessage}
+                      isLoading={messagesLoading}
+                      isSending={sendMessageMutation.isPending}
+                    />
+                  </>
+                )}
+
+                {/* Empty State for Mobile */}
+                {!selectedConversationId && (
+                  <div className="hidden md:flex items-center justify-center h-full text-muted-foreground">
+                    <div className="text-center">
+                      <MessageCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg">
+                        Select a conversation to start messaging
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </Card>

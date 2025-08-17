@@ -133,9 +133,9 @@ export const PostedItemsGrid = ({
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {searchTerm
               ? `Search results for "${searchTerm}"`
-              : 'All posted items'}
+              : 'Swap Space - Your Trade, swap and Exchange Platform'}
             {' • '}
-            {allItems.length} {allItems.length === 1 ? 'item' : 'items'}
+            {/* {allItems.length} {allItems.length === 1 ? 'item' : 'items'} */}
           </p>
         </div>
 
