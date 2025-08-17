@@ -14,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/password-input';
 import { changePassword } from '../actions/change-password';
 import { useAuth } from '@/features/auth/hooks/use-auth';
 
@@ -108,7 +108,7 @@ const ChangePasswordForm = () => {
             <FormItem>
               <FormLabel>Current Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••" {...field} />
+                <PasswordInput placeholder="••••••" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -122,7 +122,7 @@ const ChangePasswordForm = () => {
             <FormItem>
               <FormLabel>New Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••" {...field} />
+                <PasswordInput placeholder="••••••" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -136,7 +136,7 @@ const ChangePasswordForm = () => {
             <FormItem>
               <FormLabel>Confirm New Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••" {...field} />
+                <PasswordInput placeholder="••••••" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
