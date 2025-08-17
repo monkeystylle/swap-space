@@ -1,6 +1,9 @@
 /**
- * Query to get user profile by user ID
+ * Server function to get user profile by user ID
+ * Similar to bartering queries pattern
  */
+
+'use server';
 
 import { prisma } from '@/lib/prisma';
 import type { Profile } from './profile.types';
