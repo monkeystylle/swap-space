@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Camera, X, Check, AlertCircle } from 'lucide-react';
+import { Camera, X, Check, AlertCircle, Loader2 } from 'lucide-react';
 import Webcam from 'react-webcam';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -270,7 +270,7 @@ export const WebcamCapture: React.FC<WebcamCaptureProps> = ({
                 >
                   {isUploading ? (
                     <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Uploading...
                     </>
                   ) : (
