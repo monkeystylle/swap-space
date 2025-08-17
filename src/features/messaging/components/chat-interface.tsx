@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { capitalizeFirstLetter } from '@/utils/text-utils';
 import { getAvatarColor } from '@/utils/avatar-colors';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export interface ChatMessage {
   id: string;
@@ -22,6 +23,11 @@ export interface ChatMessage {
 export interface ChatUser {
   id: string;
   username: string;
+  profile?: {
+    id: string;
+    profilePictureSecureUrl: string | null;
+    profilePicturePublicId: string | null;
+  } | null;
 }
 
 interface ChatInterfaceProps {
@@ -110,13 +116,21 @@ export const ChatInterface = ({
       {/* Header */}
       <div className="h-16 px-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center">
         <div className="flex items-center space-x-3">
-          <div
-            className={`w-10 h-10 rounded-full ${getAvatarColor(
-              otherUser.username
-            )} flex items-center justify-center text-white font-medium`}
-          >
-            {capitalizeFirstLetter(otherUser.username).charAt(0)}
-          </div>
+          <Avatar className="w-10 h-10">
+            {otherUser.profile?.profilePictureSecureUrl && (
+              <AvatarImage
+                src={otherUser.profile.profilePictureSecureUrl}
+                alt={`${otherUser.username}'s profile picture`}
+              />
+            )}
+            <AvatarFallback
+              className={`${getAvatarColor(
+                otherUser.username
+              )} text-white font-medium`}
+            >
+              {capitalizeFirstLetter(otherUser.username).charAt(0)}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <h3 className="font-medium">
               {capitalizeFirstLetter(otherUser.username)}

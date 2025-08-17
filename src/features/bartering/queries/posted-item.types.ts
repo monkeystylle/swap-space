@@ -15,6 +15,11 @@ export interface PostedItemWithDetails {
     id: string;
     username: string;
     email: string;
+    profile: {
+      id: string;
+      profilePictureSecureUrl: string | null;
+      profilePicturePublicId: string | null;
+    } | null;
   };
   _count: {
     offers: number;

@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { LucideLock, LucideLogOut, LucideUser } from 'lucide-react';
 import Link from 'next/link';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import {
 
 import { accountPasswordPath, accountProfilePath } from '@/paths';
 import { signOut } from '@/features/auth/actions/sign-out';
+import { useProfile } from '@/features/profile/hooks/use-profile';
 
 type AccountDropdownProps = {
   user: User;
@@ -20,11 +21,18 @@ type AccountDropdownProps = {
 
 const AccountDropdown = ({ user }: AccountDropdownProps) => {
   const isGoogleAuth = user.passwordHash === 'GOOGLE_OAUTH_USER';
+  const { data: profile } = useProfile(user.id);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="cursor-pointer">
         <Avatar>
+          {profile?.profilePictureSecureUrl && (
+            <AvatarImage
+              src={profile.profilePictureSecureUrl}
+              alt={`${user.username}'s profile picture`}
+            />
+          )}
           <AvatarFallback>{user.username[0].toUpperCase()}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

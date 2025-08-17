@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Archive, User as UserIcon } from 'lucide-react';
 import { capitalizeFirstLetter } from '@/utils/text-utils';
 import { getAvatarColor } from '@/utils/avatar-colors';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useCachedAuth } from '@/features/auth/hooks/use-cached-auth';
@@ -18,6 +19,11 @@ export interface ConversationSummary {
   otherUser: {
     id: string;
     username: string;
+    profile: {
+      id: string;
+      profilePictureSecureUrl: string | null;
+      profilePicturePublicId: string | null;
+    } | null;
   };
   lastMessage?: {
     content: string;
@@ -135,15 +141,27 @@ export const ConversationList = ({
                   {/* All your existing conversation item JSX stays exactly the same */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3 min-w-0 flex-1">
-                      <div
-                        className={`w-10 h-10 rounded-full ${getAvatarColor(
-                          conversation.otherUser.username
-                        )} flex items-center justify-center text-white font-medium text-sm`}
-                      >
-                        {capitalizeFirstLetter(
-                          conversation.otherUser.username
-                        ).charAt(0)}
-                      </div>
+                      <Avatar className="w-10 h-10 flex-shrink-0">
+                        {conversation.otherUser.profile
+                          ?.profilePictureSecureUrl && (
+                          <AvatarImage
+                            src={
+                              conversation.otherUser.profile
+                                .profilePictureSecureUrl
+                            }
+                            alt={`${conversation.otherUser.username}'s profile picture`}
+                          />
+                        )}
+                        <AvatarFallback
+                          className={`${getAvatarColor(
+                            conversation.otherUser.username
+                          )} text-white font-medium text-sm`}
+                        >
+                          {capitalizeFirstLetter(
+                            conversation.otherUser.username
+                          ).charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center space-x-2">
                           <h4 className="font-medium text-sm truncate">

@@ -37,6 +37,13 @@ const ItemPage = async ({ params }: ItemPageProps) => {
           id: true,
           username: true,
           email: true,
+          profile: {
+            select: {
+              id: true,
+              profilePictureSecureUrl: true,
+              profilePicturePublicId: true,
+            },
+          },
         },
       },
       offers: {

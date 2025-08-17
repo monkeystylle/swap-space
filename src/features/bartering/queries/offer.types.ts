@@ -18,6 +18,11 @@ export interface OfferUser {
   id: string;
   username: string;
   email: string;
+  profile: {
+    id: string;
+    profilePictureSecureUrl: string | null;
+    profilePicturePublicId: string | null;
+  } | null;
 }
 
 // Offer with user details for display components

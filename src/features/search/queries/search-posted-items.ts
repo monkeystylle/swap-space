@@ -38,6 +38,9 @@ interface RawPostedItemResult {
   user_id: string;
   user_username: string;
   user_email: string;
+  profile_id: string | null;
+  profile_pictureSecureUrl: string | null;
+  profile_picturePublicId: string | null;
   offers_count: number;
 }
 
@@ -111,6 +114,7 @@ export const searchPostedItems = async ({
       SELECT COUNT(*)::int as count
       FROM "PostedItem" p
       JOIN "User" u ON p."userId" = u.id
+      LEFT JOIN "Profile" pr ON u.id = pr."userId"
       WHERE p.status = 'OPEN'
       ${categoryFilter}
       ${searchFilter}
@@ -133,9 +137,13 @@ export const searchPostedItems = async ({
         u.id as "user_id",
         u.username as "user_username",
         u.email as "user_email",
+        pr.id as "profile_id",
+        pr."profilePictureSecureUrl" as "profile_pictureSecureUrl",
+        pr."profilePicturePublicId" as "profile_picturePublicId",
         (SELECT COUNT(*)::int FROM "Offer" o WHERE o."postedItemId" = p.id) as "offers_count"
       FROM "PostedItem" p
       JOIN "User" u ON p."userId" = u.id
+      LEFT JOIN "Profile" pr ON u.id = pr."userId"
       WHERE p.status = 'OPEN'
       ${categoryFilter}
       ${searchFilter}
@@ -169,6 +177,13 @@ export const searchPostedItems = async ({
           id: item.user_id,
           username: item.user_username,
           email: item.user_email,
+          profile: item.profile_id
+            ? {
+                id: item.profile_id,
+                profilePictureSecureUrl: item.profile_pictureSecureUrl,
+                profilePicturePublicId: item.profile_picturePublicId,
+              }
+            : null,
         },
         _count: {
           offers: item.offers_count,

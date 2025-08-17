@@ -37,6 +37,13 @@ export const getPostedItems = async (): Promise<PostedItemWithDetails[]> => {
             id: true,
             username: true,
             email: true,
+            profile: {
+              select: {
+                id: true,
+                profilePictureSecureUrl: true,
+                profilePicturePublicId: true,
+              },
+            },
           },
         },
         _count: {
