@@ -19,8 +19,8 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/password-input';
 import { signIn } from '../actions/sign-in';
 import { homePath } from '@/paths';
-import { Separator } from '@/components/ui/separator';
-import { GoogleIcon } from '@/components/ui/google-icon';
+// import { Separator } from '@/components/ui/separator';
+// import { GoogleIcon } from '@/components/ui/google-icon';
 
 const clientSignInSchema = z.object({
   email: z
