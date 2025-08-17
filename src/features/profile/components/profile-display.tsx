@@ -72,13 +72,13 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
     <div className="space-y-6">
       {/* Profile Picture Section */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center space-y-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col items-center space-y-3 sm:space-y-4">
             {/* Profile Picture */}
             <div className="relative">
               {updatePictureMutation.isPending ? (
-                <div className="w-60 h-60 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-background shadow-lg">
-                  <div className="w-8 h-8 animate-spin rounded-full border-b-2 border-primary"></div>
+                <div className="w-32 h-32 sm:w-48 md:w-60 sm:h-48 md:h-60 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 sm:border-4 border-background shadow-lg">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 animate-spin rounded-full border-b-2 border-primary"></div>
                 </div>
               ) : profile?.profilePictureSecureUrl ? (
                 <Image
@@ -86,12 +86,12 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
                   alt="Profile picture"
                   width={240}
                   height={240}
-                  className="rounded-full object-cover border-4 border-background shadow-lg"
+                  className="w-32 h-32 sm:w-48 md:w-60 sm:h-48 md:h-60 rounded-full object-cover border-2 sm:border-4 border-background shadow-lg"
                   key={profile.profilePictureSecureUrl} // Force re-render when URL changes
                 />
               ) : (
-                <div className="w-60 h-60 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-background shadow-lg">
-                  <User className="w-24 h-24 text-gray-400" />
+                <div className="w-32 h-32 sm:w-48 md:w-60 sm:h-48 md:h-60 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 sm:border-4 border-background shadow-lg">
+                  <User className="w-12 h-12 sm:w-16 md:w-24 sm:h-16 md:h-24 text-gray-400" />
                 </div>
               )}
 
@@ -99,18 +99,18 @@ export const ProfileDisplay: React.FC<ProfileDisplayProps> = ({
               {isOwner && (
                 <Button
                   size="sm"
-                  className="cursor-pointer absolute -bottom-1 -right-1 rounded-full w-12 h-12 p-0 shadow-lg border-2 border-background"
+                  className="cursor-pointer absolute -bottom-1 -right-1 rounded-full w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 p-0 shadow-lg border-2 border-background"
                   onClick={() => setShowWebcam(true)}
                   disabled={updatePictureMutation.isPending}
                 >
-                  <Camera className="size-6" />
+                  <Camera className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 </Button>
               )}
             </div>
 
             {/* Picture Status */}
             {!profile?.profilePictureSecureUrl && (
-              <p className="text-sm text-muted-foreground text-center">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center px-4">
                 {isOwner
                   ? 'Click the camera icon to add your profile picture'
                   : 'No profile picture'}
