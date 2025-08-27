@@ -395,7 +395,7 @@ const SignUpForm = () => {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
               <Shield className="h-6 w-6 text-blue-600" />
             </div>
-            <CardTitle>Verify Your Phone Number</CardTitle>
+            <CardTitle>Verify Your SMS Number</CardTitle>
             <CardDescription>
               We&apos;ve sent a 6-digit verification code to{' '}
               <span className="font-medium">{userDetails?.phoneNumber}</span>
@@ -556,7 +556,7 @@ const SignUpForm = () => {
             name="phoneNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone Number</FormLabel>
+                <FormLabel>SMS Number</FormLabel>
                 <FormControl>
                   <Input placeholder="09XX XXX XXXX" {...field} />
                 </FormControl>
