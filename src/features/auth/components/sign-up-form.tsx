@@ -22,8 +22,8 @@ import { signUp } from '../actions/sign-up';
 import { sendOtp } from '../actions/send-otp';
 import { verifyOtp } from '../actions/verify-otp';
 import { homePath } from '@/paths';
-// import { Separator } from '@/components/ui/separator';
-// import { GoogleIcon } from '@/components/ui/google-icon';
+import { Separator } from '@/components/ui/separator';
+import { GoogleIcon } from '@/components/ui/google-icon';
 import { isValidPhilippineNumber } from '@/lib/semaphore';
 import {
   Card,
@@ -599,18 +599,18 @@ const SignUpForm = () => {
         </form>
       </Form>
 
-      {/* <div className="flex items-center">
+      <div className="flex items-center">
         <Separator className="flex-1" />
         <span className="px-3 text-sm text-muted-foreground">OR</span>
         <Separator className="flex-1" />
-      </div> */}
+      </div>
 
-      {/* <Button variant="outline" className="w-full" asChild>
+      <Button variant="outline" className="w-full" asChild>
         <a href="/api/login/google" className="flex items-center gap-2">
           <GoogleIcon />
           Sign up with Google
         </a>
-      </Button> */}
+      </Button>
     </div>
   );
 };
