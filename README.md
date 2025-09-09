@@ -4,9 +4,7 @@ A modern bartering and trading platform built with Next.js 15
 
 ## 🚀 Overview
 
-SwapSpace is a full-stack digital exchange platform that enables users to trade, swap, and exchange items and services efficiently through a secure marketplace.
-
-**Note:** This application is currently optimized for desktop view only and is not yet responsive for mobile devices.
+SwapSpace is a full-stack digital exchange platform that enables users to trade, swap, and exchange items and services.
 
 ## ✨ Features
 
@@ -16,8 +14,8 @@ SwapSpace is a full-stack digital exchange platform that enables users to trade,
 - **AI-Powered Profile Validation**: MediaPipe face detection for profile picture verification via webcam
 - **Advanced Search & Filter**: Full-text search with category filters and URL state management using [nuqs](https://www.npmjs.com/package/nuqs)
 - **Smart Image Handling**: Cloudinary integration for optimized uploads and transformations
-- **Notification System**: Real-time notifications for offers, messages, and trade updates
-- **Profile Management**: Comprehensive user profiles with webcam capture functionality
+- **Notification System**: notifications for offers, messages, and trade updates
+- **Profile Management**: user profiles with webcam capture functionality
 
 ## 🛠️ Tech Stack
 
@@ -50,7 +48,6 @@ SwapSpace is a full-stack digital exchange platform that enables users to trade,
 
 - **Communication**:
   - React Email + Resend (transactional emails)
-  - Real-time messaging system
 
 - **Utility Libraries**:
   - zod (schema validation for forms and API data)
