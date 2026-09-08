@@ -11,7 +11,7 @@ export const sendOfferNotificationEmail = async (
 ) => {
   try {
     const result = await resend.emails.send({
-      from: 'Swap Space <noreply@swap-space-app.com>',
+      from: 'Swap Space <noreply@swap-space.josephbrummel.com>',
       to: ownerEmail,
       subject: `New offer on your item: ${itemTitle}`,
       react: OfferNotificationEmail({

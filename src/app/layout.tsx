@@ -42,14 +42,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://www.swap-space-app.com',
+    url: 'https://swap-space.josephbrummel.com',
     siteName: 'Swap Space',
     title: 'Swap Space - Your Digital Exchange Platform',
     description:
       'Trade, swap, and exchange items securely with our innovative marketplace solution.',
     // images: [
     //   {
-    //     url: 'https://www.swap-space-app.com/og-image.jpg', // Add this image later
+    //     url: 'https://swap-space.josephbrummel.com/og-image.jpg', // Add this image later
     //     width: 1200,
     //     height: 630,
     //     alt: 'Swap Space - Digital Exchange Platform',
@@ -65,13 +65,13 @@ export const metadata: Metadata = {
     title: 'Swap Space - Your Digital Exchange Platform',
     description:
       'Trade, swap, and exchange items securely with our innovative marketplace solution.',
-    // images: ['https://www.swap-space-app.com/twitter-image.jpg'], // Add this image later
+    // images: ['https://swap-space.josephbrummel.com/twitter-image.jpg'], // Add this image later
   },
 
   // Additional metadata
-  metadataBase: new URL('https://www.swap-space-app.com'),
+  metadataBase: new URL('https://swap-space.josephbrummel.com'),
   alternates: {
-    canonical: 'https://www.swap-space-app.com',
+    canonical: 'https://swap-space.josephbrummel.com',
   },
 
   // Robots
@@ -126,7 +126,7 @@ export default function RootLayout({
               '@type': 'WebSite',
               name: 'Swap Space',
               alternateName: 'Swap Space App',
-              url: 'https://www.swap-space-app.com',
+              url: 'https://swap-space.josephbrummel.com',
               description:
                 'Your premier digital exchange platform for trading and swapping items securely.',
               potentialAction: {
@@ -134,15 +134,15 @@ export default function RootLayout({
                 target: {
                   '@type': 'EntryPoint',
                   urlTemplate:
-                    'https://www.swap-space-app.com/?q={search_term_string}',
+                    'https://swap-space.josephbrummel.com/?q={search_term_string}',
                 },
                 'query-input': 'required name=search_term_string',
               },
               publisher: {
                 '@type': 'Organization',
                 name: 'Swap Space',
-                url: 'https://www.swap-space-app.com',
-                // logo: 'https://www.swap-space-app.com/logo.png'
+                url: 'https://swap-space.josephbrummel.com',
+                // logo: 'https://swap-space.josephbrummel.com/logo.png'
               },
             }),
           }}
@@ -151,7 +151,7 @@ export default function RootLayout({
         {/* Additional meta tags */}
         <meta name="theme-color" content="#000000" />
         <meta name="color-scheme" content="light dark" />
-        <link rel="canonical" href="https://www.swap-space-app.com" />
+        <link rel="canonical" href="https://swap-space.josephbrummel.com" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
